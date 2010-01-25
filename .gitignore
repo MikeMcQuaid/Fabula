@@ -1,0 +1,6 @@
+Fabula.app/
+Makefile
+*.o
+*.user
+ui_*
+moc_*
