@@ -1,9 +1,7 @@
 # -------------------------------------------------
 # Project created by QtCreator 2010-01-25T18:12:04
 # -------------------------------------------------
-QT += sql \
-    xml \
-    phonon
+QT += sql
 TARGET = Fabula
 TEMPLATE = app
 SOURCES += main.cpp \
