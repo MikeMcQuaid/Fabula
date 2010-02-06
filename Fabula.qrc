@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/application-exit.png</file>
+        <file>icons/audio-input-microphone.png</file>
+        <file>icons/document-new.png</file>
+        <file>icons/document-open.png</file>
+    </qresource>
+</RCC>

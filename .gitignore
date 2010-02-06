@@ -1,6 +1,8 @@
 Fabula.app/
 Makefile
+*.DS_Store
 *.o
 *.user
 ui_*
 moc_*
+qrc_*

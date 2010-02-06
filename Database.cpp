@@ -30,6 +30,8 @@ Database::Database(const QString &path, QObject *parent) :
     }
 }
 
+// TODO: Add conversation global variable prerequisites
+
 bool Database::create()
 {
     QMap<QString, QString> databaseStructure;

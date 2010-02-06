@@ -7,14 +7,22 @@ TEMPLATE = app
 SOURCES += main.cpp \
     MainWindow.cpp \
     Database.cpp \
-    TreeTableProxyModel.cpp
+    TableTreeModel.cpp
 HEADERS += MainWindow.h \
     Database.h \
-    TreeTableProxyModel.h
+    TableTreeModel.h
 FORMS += MainWindow.ui
-CONFIG += warn_on precompile_header embed_manifest_exe
-#DEFINES += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
-#QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4
-#QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk
-#CONFIG+=x86 x86_64 ppc ppc64
-QMAKE_CXXFLAGS += -Wall -Wextra -Werror
+CONFIG += warn_on \
+    precompile_header \
+    embed_manifest_exe
+RC_FILE = icons/audio-input-microphone.icns
+
+# DEFINES += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
+# QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4
+# QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk
+# CONFIG+=x86 x86_64 ppc ppc64
+QMAKE_CXXFLAGS += -Wall \
+    -Wextra \
+    -Werror
+OTHER_FILES +=
+RESOURCES += Fabula.qrc

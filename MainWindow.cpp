@@ -2,12 +2,13 @@
 #include "ui_MainWindow.h"
 
 #include "Database.h"
-#include "TreeTableProxyModel.h"
+#include "TableTreeModel.h"
 
 #include <QFileDialog>
 #include <QSqlRelationalTableModel>
 #include <QTableView>
 #include <QSqlRelationalDelegate>
+#include <QFile>
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -52,30 +53,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->eventsView->hideColumn(0);
     ui->eventsView->resizeColumnsToContents();
 
-    conversationsTableModel = new QSqlRelationalTableModel(this);
-    conversationsTableModel->setTable("conversations");
-    conversationsTableModel->setEditStrategy(QSqlTableModel::OnFieldChange);
+    TreeModel *conversationsTreeModel = new TreeModel(this);
 
-    conversationsTableModel->setRelation(
-            1, QSqlRelation("conversation_types", "id", "name"));
-    conversationsTableModel->setRelation(
-            2, QSqlRelation("writers", "id", "name"));
-
-    conversationsTableModel->setHeaderData(0, Qt::Horizontal, tr("ID"));
-    conversationsTableModel->setHeaderData(1, Qt::Horizontal, tr("Type"));
-    conversationsTableModel->setHeaderData(2, Qt::Horizontal, tr("Writer"));
-    conversationsTableModel->setHeaderData(3, Qt::Horizontal, tr("Name"));
-
-    conversationsTableModel->select();
-
-    //TreeTableProxyModel *conversationsTreeModel
-    //        = new TreeTableProxyModel(conversationsTableModel);
-
-    ui->conversationsView->setModel(conversationsTableModel);
-
-    ui->conversationsView->setItemDelegate(
-            new QSqlRelationalDelegate(ui->conversationsView));
-    ui->conversationsView->hideColumn(0);
+    ui->conversationsView->setModel(conversationsTreeModel);
 }
 
 void MainWindow::newFile()
