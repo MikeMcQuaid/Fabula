@@ -10,6 +10,7 @@
 #include <QSqlRelationalDelegate>
 #include <QFile>
 #include <QDebug>
+#include <QSortFilterProxyModel>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,8 +21,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->statusBar->hide();
+
     connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(newFile()));
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
+
+    connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
+            this, SLOT(filterOnConversation(QModelIndex)));
 
     QString fileName = settings.value("database").toString();
 
@@ -32,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
         openFile(fileName);
     }
 
-    eventsModel = new QSqlRelationalTableModel(this);
+    eventsModel = new QSqlRelationalTableModel();
     eventsModel->setTable("events");
     eventsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
@@ -48,7 +54,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     eventsModel->select();
 
-    ui->eventsView->setModel(eventsModel);
+    eventsFilter = new QSortFilterProxyModel(this);
+    eventsFilter->setSourceModel(eventsModel);
+    eventsFilter->setDynamicSortFilter(true);
+
+    ui->eventsView->setModel(eventsFilter);
     ui->eventsView->setItemDelegate(new QSqlRelationalDelegate(ui->eventsView));
     ui->eventsView->hideColumn(0);
     ui->eventsView->resizeColumnsToContents();
@@ -80,7 +90,7 @@ void MainWindow::openFile(QString fileName)
             delete database;
             database = 0;
         }
-        database = new Database(fileName, this);
+        database = new Database(fileName);
         settings.setValue("database", fileName);
         if (eventsModel) {
             eventsModel->select();
@@ -98,9 +108,25 @@ void MainWindow::openFile(QString fileName)
     }
 }
 
+void MainWindow::filterOnConversation(const QModelIndex& index)
+{
+    if (index.parent().isValid()) {
+        eventsFilter->setFilterFixedString(eventsModel->data(index).toString());
+        eventsFilter->setFilterKeyColumn(1);
+    }
+    else {
+        eventsFilter->setFilterFixedString(eventsModel->data(index).toString());
+        eventsFilter->setFilterKeyColumn(2);
+    }
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
+    // Delete here rather than using this object as parent so we can ensure the
+    // database is deleted last.
+    delete eventsModel;
+    delete database;
 }
 
 void MainWindow::changeEvent(QEvent *e)

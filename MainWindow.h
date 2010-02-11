@@ -5,6 +5,7 @@
 
 #include <QSettings>
 #include <QDesktopServices>
+#include <QModelIndex>
 
 namespace Ui {
     class MainWindow;
@@ -12,6 +13,7 @@ namespace Ui {
 
 class Database;
 class QSqlRelationalTableModel;
+class QSortFilterProxyModel;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -22,6 +24,7 @@ public:
 public slots:
     void newFile();
     void openFile(QString fileName = QString());
+    void filterOnConversation(const QModelIndex& index);
 
 protected:
     void changeEvent(QEvent *e);
@@ -31,6 +34,7 @@ private:
     Database *database;
     QSqlRelationalTableModel *eventsModel;
     QSqlRelationalTableModel *conversationsTableModel;
+    QSortFilterProxyModel *eventsFilter;
     QSettings settings;
     QDesktopServices desktopServices;
 };

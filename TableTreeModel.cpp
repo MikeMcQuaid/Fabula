@@ -64,6 +64,7 @@ TreeModel::TreeModel(QObject *parent)
     QSqlQuery query;
 
     QMap<QString, TreeItem*> characters;
+    QMap<QString, TreeItem*> conversations;
 
     query.exec("select characters.name, conversations.name from events "
                "inner join characters on events.character_id = characters.id "

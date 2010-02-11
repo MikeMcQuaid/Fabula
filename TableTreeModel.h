@@ -44,6 +44,8 @@ public:
 
 private:
     TreeItem *rootItem;
+    QMap<QString, TreeItem*> characters;
+    QMap<QString, TreeItem*> conversations;
 };
 
 #endif // TABLETREEMODEL_H
