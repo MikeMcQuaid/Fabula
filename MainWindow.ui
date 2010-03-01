@@ -63,7 +63,16 @@
       <property name="handleWidth">
        <number>1</number>
       </property>
+      <property name="childrenCollapsible">
+       <bool>false</bool>
+      </property>
       <widget class="QTreeView" name="conversationsView">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="sortingEnabled">
         <bool>true</bool>
        </property>
@@ -76,8 +85,17 @@
        <property name="wordWrap">
         <bool>true</bool>
        </property>
+       <property name="expandsOnDoubleClick">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QTableView" name="eventsView">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
@@ -88,7 +106,10 @@
         <bool>true</bool>
        </property>
        <property name="showGrid">
-        <bool>false</bool>
+        <bool>true</bool>
+       </property>
+       <property name="gridStyle">
+        <enum>Qt::DotLine</enum>
        </property>
        <property name="sortingEnabled">
         <bool>true</bool>
@@ -158,7 +179,8 @@
    <addaction name="actionNew"/>
    <addaction name="actionOpen"/>
    <addaction name="actionQuit"/>
-   <addaction name="separator"/>
+   <addaction name="actionAdd"/>
+   <addaction name="actionDelete"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="enabled">
@@ -213,6 +235,16 @@
   <action name="actionPreferences">
    <property name="text">
     <string>Preferences</string>
+   </property>
+  </action>
+  <action name="actionAdd">
+   <property name="text">
+    <string>Add</string>
+   </property>
+  </action>
+  <action name="actionDelete">
+   <property name="text">
+    <string>Delete</string>
    </property>
   </action>
  </widget>

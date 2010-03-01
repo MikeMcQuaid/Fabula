@@ -38,21 +38,17 @@ bool Database::create()
 
     databaseStructure.insert("characters",
                              "id int not null primary key, "
-                             "name varchar(20)");
+                             "name varchar(20) unique");
 
     databaseStructure.insert("writers",
                              "id int not null primary key, "
-                             "name varchar(20)");
-
-    databaseStructure.insert("writers",
-                             "id int not null primary key, "
-                             "name varchar(20)");
+                             "name varchar(20) unique");
 
     databaseStructure.insert("conversations",
                              "id int not null primary key, "
                              "type int not null, "
                              "writer_id int not null, "
-                             "name varchar(20)");
+                             "name varchar(20) unique");
 
     databaseStructure.insert("conversations_events",
                              "id int not null primary key, "
@@ -73,7 +69,7 @@ bool Database::create()
 
     databaseStructure.insert("conversation_types",
                              "id int not null primary key, "
-                             "name varchar(20)");
+                             "name varchar(20) unique");
 
     QSqlQuery sqlQuery;
     foreach(const QString &tableName, databaseStructure.keys()) {

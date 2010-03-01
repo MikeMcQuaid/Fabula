@@ -6,22 +6,20 @@
 class TreeItem
 {
 public:
-    TreeItem(const QList<QVariant> &data, TreeItem *parent = 0);
+    TreeItem(const QString &data, TreeItem *parent = 0);
     ~TreeItem();
-
-    void appendChild(TreeItem *child);
 
     TreeItem *child(int row);
     int childCount() const;
-    int columnCount() const;
-    QVariant data(int column) const;
+    const QString &data() const;
     int row() const;
     TreeItem *parent();
+    void setValue();
 
 private:
-    QList<TreeItem*> childItems;
-    QList<QVariant> itemData;
-    TreeItem *parentItem;
+    QList<TreeItem*> m_children;
+    QString m_data;
+    TreeItem *m_parent;
 };
 
 class TreeModel : public QAbstractItemModel
@@ -32,7 +30,7 @@ public:
     TreeModel(QObject *parent = 0);
     ~TreeModel();
 
-    QVariant data(const QModelIndex &index, int role) const;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     Qt::ItemFlags flags(const QModelIndex &index) const;
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const;
@@ -43,9 +41,7 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
 private:
-    TreeItem *rootItem;
-    QMap<QString, TreeItem*> characters;
-    QMap<QString, TreeItem*> conversations;
+    TreeItem *root;
 };
 
 #endif // TABLETREEMODEL_H

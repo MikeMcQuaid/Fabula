@@ -13,7 +13,9 @@ namespace Ui {
 
 class Database;
 class QSqlRelationalTableModel;
+class QSqlRelationalTableModelDebug;
 class QSortFilterProxyModel;
+class TreeModel;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -25,6 +27,8 @@ public slots:
     void newFile();
     void openFile(QString fileName = QString());
     void filterOnConversation(const QModelIndex& index);
+    void addRow();
+    void deleteRow();
 
 protected:
     void changeEvent(QEvent *e);
@@ -32,11 +36,12 @@ protected:
 private:
     Ui::MainWindow *ui;
     Database *database;
-    QSqlRelationalTableModel *eventsModel;
-    QSqlRelationalTableModel *conversationsTableModel;
+    QSqlRelationalTableModelDebug *eventsModel;
+    QSqlRelationalTableModelDebug *conversationsTableModel;
     QSortFilterProxyModel *eventsFilter;
     QSettings settings;
     QDesktopServices desktopServices;
+    TreeModel *conversationsTreeModel;
 };
 
 #endif // MAINWINDOW_H

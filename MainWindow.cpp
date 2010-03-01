@@ -12,6 +12,12 @@
 #include <QDebug>
 #include <QSortFilterProxyModel>
 
+class QSqlRelationalTableModelDebug : public QSqlRelationalTableModel
+{
+public:
+    virtual QString selectStatement() { return QSqlRelationalTableModel::selectStatement(); }
+};
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -23,8 +29,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->statusBar->hide();
 
+    ui->splitter->setStretchFactor(1, 3);
+
     connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(newFile()));
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
+    connect(ui->actionAdd, SIGNAL(triggered()), this, SLOT(addRow()));
+    connect(ui->actionDelete, SIGNAL(triggered()), this, SLOT(deleteRow()));
 
     connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
             this, SLOT(filterOnConversation(QModelIndex)));
@@ -38,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
         openFile(fileName);
     }
 
-    eventsModel = new QSqlRelationalTableModel();
+    eventsModel = new QSqlRelationalTableModelDebug();
     eventsModel->setTable("events");
     eventsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
@@ -58,12 +68,12 @@ MainWindow::MainWindow(QWidget *parent) :
     eventsFilter->setSourceModel(eventsModel);
     eventsFilter->setDynamicSortFilter(true);
 
-    ui->eventsView->setModel(eventsFilter);
+    ui->eventsView->setModel(eventsModel);
     ui->eventsView->setItemDelegate(new QSqlRelationalDelegate(ui->eventsView));
-    ui->eventsView->hideColumn(0);
+    //ui->eventsView->hideColumn(0);
     ui->eventsView->resizeColumnsToContents();
 
-    TreeModel *conversationsTreeModel = new TreeModel(this);
+    conversationsTreeModel = new TreeModel(this);
 
     ui->conversationsView->setModel(conversationsTreeModel);
 }
@@ -110,14 +120,24 @@ void MainWindow::openFile(QString fileName)
 
 void MainWindow::filterOnConversation(const QModelIndex& index)
 {
-    if (index.parent().isValid()) {
-        eventsFilter->setFilterFixedString(eventsModel->data(index).toString());
-        eventsFilter->setFilterKeyColumn(1);
-    }
-    else {
-        eventsFilter->setFilterFixedString(eventsModel->data(index).toString());
-        eventsFilter->setFilterKeyColumn(2);
-    }
+    QString filter;
+    if (index.parent().isValid())
+        //FIXME: Nasty table names
+        filter = QString("relTblAl_1.name='%1'").arg(conversationsTreeModel->data(index).toString());
+    else
+        //FIXME: Nasty table names
+        filter = QString("relTblAl_2.name='%1'").arg(conversationsTreeModel->data(index).toString());
+    eventsModel->setFilter(filter);
+}
+
+void MainWindow::addRow()
+{
+    eventsModel->insertRow(ui->eventsView->currentIndex().row()+1);
+}
+
+void MainWindow::deleteRow()
+{
+    eventsModel->removeRow(ui->eventsView->currentIndex().row());
 }
 
 MainWindow::~MainWindow()
