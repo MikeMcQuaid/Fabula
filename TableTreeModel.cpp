@@ -9,8 +9,6 @@ TreeItem::TreeItem(const QString &data, TreeItem *parent)
 {
     m_data = data;
     m_parent = parent;
-    if (m_parent)
-        m_parent->m_children.append(this);
 }
 
 TreeItem::~TreeItem()
@@ -23,6 +21,11 @@ TreeItem::~TreeItem()
 TreeItem *TreeItem::child(int row)
 {
     return m_children.value(row);
+}
+
+void TreeItem::appendChild(TreeItem* child)
+{
+    m_children.append(child);
 }
 
 int TreeItem::childCount() const
@@ -48,6 +51,11 @@ TreeItem *TreeItem::parent()
     return m_parent;
 }
 
+void TreeItem::setData(const QString &data)
+{
+    m_data = data;
+}
+
 TreeModel::TreeModel(QObject *parent)
     : QAbstractItemModel(parent)
 {
@@ -67,8 +75,10 @@ TreeModel::TreeModel(QObject *parent)
 
     foreach(const QString& characterName, charactersConversations.keys()) {
         TreeItem* character = new TreeItem(characterName, root);
+        root->appendChild(character);
         foreach(const QString& conversationName, charactersConversations.values(characterName)) {
-            new TreeItem(conversationName, character);
+            TreeItem* conversation = new TreeItem(conversationName, character);
+            character->appendChild(conversation);
         }
     }
 }
@@ -144,12 +154,44 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
     return item->data();
 }
 
+bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    qDebug() << value.toString();
+    if (!index.isValid())
+        return false;
+
+    if (role != Qt::EditRole)
+        return false;
+
+    if (value.toString().isEmpty())
+        return false;
+
+    TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
+    item->setData(value.toString());
+
+    // TODO: Actually write to the SQL database
+    emit dataChanged(index, index);
+    return true;
+}
+
+bool TreeModel::insertRow(int, const QModelIndex &parent)
+{
+    TreeItem *parentItem = static_cast<TreeItem*>(parent.internalPointer());
+    if (!parentItem)
+        return false;
+
+    beginInsertRows(parent, 0, parentItem->childCount());
+    parentItem->appendChild(new TreeItem("New Item", parentItem));
+    endInsertRows();
+    return true;
+}
+
 Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
         return 0;
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
 }
 
 QVariant TreeModel::headerData(int, Qt::Orientation orientation,

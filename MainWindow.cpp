@@ -33,8 +33,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(newFile()));
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
-    connect(ui->actionAdd, SIGNAL(triggered()), this, SLOT(addRow()));
-    connect(ui->actionDelete, SIGNAL(triggered()), this, SLOT(deleteRow()));
+    connect(ui->actionAdd_Event, SIGNAL(triggered()), this, SLOT(addEvent()));
+    connect(ui->actionDelete_Event, SIGNAL(triggered()), this, SLOT(deleteEvent()));
+    connect(ui->actionAdd_Conversation, SIGNAL(triggered()), this, SLOT(addToConversationTree()));
+    connect(ui->actionDelete_Conversation, SIGNAL(triggered()), this, SLOT(removeFromConversationTree()));
+    connect(ui->actionAdd_Character, SIGNAL(triggered()), this, SLOT(addToConversationTree()));
+    connect(ui->actionDelete_Character, SIGNAL(triggered()), this, SLOT(removeFromConversationTree()));
 
     connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
             this, SLOT(filterOnConversation(QModelIndex)));
@@ -72,9 +76,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->eventsView->setItemDelegate(new QSqlRelationalDelegate(ui->eventsView));
     //ui->eventsView->hideColumn(0);
     ui->eventsView->resizeColumnsToContents();
+    ui->eventsView->setWordWrap(true);
 
     conversationsTreeModel = new TreeModel(this);
-
+    ui->conversationsView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->conversationsView->setUniformRowHeights(true);
     ui->conversationsView->setModel(conversationsTreeModel);
 }
 
@@ -130,14 +136,26 @@ void MainWindow::filterOnConversation(const QModelIndex& index)
     eventsModel->setFilter(filter);
 }
 
-void MainWindow::addRow()
+void MainWindow::addEvent()
 {
     eventsModel->insertRow(ui->eventsView->currentIndex().row()+1);
 }
 
-void MainWindow::deleteRow()
+void MainWindow::deleteEvent()
 {
     eventsModel->removeRow(ui->eventsView->currentIndex().row());
+}
+
+void MainWindow::addToConversationTree()
+{
+    conversationsTreeModel->insertRow(ui->conversationsView->currentIndex().row(),
+                                      ui->conversationsView->currentIndex().parent());
+}
+
+void MainWindow::removeFromConversationTree()
+{
+    conversationsTreeModel->removeRow(ui->conversationsView->currentIndex().row(),
+                                      ui->conversationsView->currentIndex().parent());
 }
 
 MainWindow::~MainWindow()

@@ -151,6 +151,15 @@
     </property>
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Event"/>
+    <addaction name="actionDelete_Event"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Character"/>
+    <addaction name="actionDelete_Character"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Conversation"/>
+    <addaction name="actionDelete_Conversation"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -179,8 +188,6 @@
    <addaction name="actionNew"/>
    <addaction name="actionOpen"/>
    <addaction name="actionQuit"/>
-   <addaction name="actionAdd"/>
-   <addaction name="actionDelete"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="enabled">
@@ -237,14 +244,40 @@
     <string>Preferences</string>
    </property>
   </action>
-  <action name="actionAdd">
+  <action name="actionAdd_Event">
    <property name="text">
-    <string>Add</string>
+    <string>Add Event</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Event</string>
    </property>
   </action>
-  <action name="actionDelete">
+  <action name="actionDelete_Event">
    <property name="text">
-    <string>Delete</string>
+    <string>Delete Event</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete Event</string>
+   </property>
+  </action>
+  <action name="actionAdd_Character">
+   <property name="text">
+    <string>Add Character</string>
+   </property>
+  </action>
+  <action name="actionDelete_Character">
+   <property name="text">
+    <string>Delete Character</string>
+   </property>
+  </action>
+  <action name="actionAdd_Conversation">
+   <property name="text">
+    <string>Add Conversation</string>
+   </property>
+  </action>
+  <action name="actionDelete_Conversation">
+   <property name="text">
+    <string>Delete Conversation</string>
    </property>
   </action>
  </widget>

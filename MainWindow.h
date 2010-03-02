@@ -27,8 +27,10 @@ public slots:
     void newFile();
     void openFile(QString fileName = QString());
     void filterOnConversation(const QModelIndex& index);
-    void addRow();
-    void deleteRow();
+    void addEvent();
+    void deleteEvent();
+    void addToConversationTree();
+    void removeFromConversationTree();
 
 protected:
     void changeEvent(QEvent *e);
