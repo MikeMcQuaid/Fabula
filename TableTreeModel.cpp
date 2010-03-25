@@ -192,7 +192,6 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 
 bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    qDebug() << value.toString();
     if (!index.isValid())
         return false;
 
@@ -252,7 +251,6 @@ bool TreeModel::submit()
             continue;
 
         if (characterItem->dirty()) {
-            qDebug() << "DIRTYCHARACTER:" << characterItem->data();
             if (characterItem->id() == TreeItem::INVALID_ID)
                 newCharacters.append(characterItem);
             else
@@ -263,7 +261,6 @@ bool TreeModel::submit()
                 continue;
 
             if (conversationItem->dirty()) {
-                qDebug() << "DIRTYCONVERSATION:" << conversationItem->data();
                 if (conversationItem->id() == TreeItem::INVALID_ID)
                     newConversations.append(conversationItem);
                 else
@@ -302,12 +299,10 @@ bool TreeModel::submit()
     // TODO: Check we update at least one row
 
     foreach (TreeItem* updatedCharacter, updatedCharacters) {
-        qDebug() << "UPDATING:" << updatedCharacter->data();
         query.prepare("update characters set name=:name where id=:id");
         query.bindValue(":name", updatedCharacter->data());
         query.bindValue(":id", updatedCharacter->id());
         querySuccess = query.exec();
-        qDebug() << query.executedQuery() << updatedCharacter->data() << updatedCharacter->id();
         if (querySuccess)
             updatedCharacter->setDirty(false);
         else
@@ -315,17 +310,17 @@ bool TreeModel::submit()
     }
 
     foreach (TreeItem* updatedConversation, updatedConversations) {
-        qDebug() << "UPDATING:" << updatedConversation->data();
         query.prepare("update conversations set name=:name where id=:id");
         query.bindValue(":name", updatedConversation->data());
         query.bindValue(":id", updatedConversation->id());
         querySuccess = query.exec();
-        qDebug() << query.executedQuery();
         if (querySuccess)
             updatedConversation->setDirty(false);
         else
             qWarning() << query.lastQuery() << query.lastError();
     }
+
+    emit submitted();
 
     return true;
 }

@@ -53,6 +53,9 @@ public:
     bool insertRow(int row, const QModelIndex &parent = QModelIndex());
     bool submit();
 
+signals:
+    void submitted();
+
 private:
     TreeItem *root;
 };

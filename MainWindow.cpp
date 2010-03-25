@@ -82,6 +82,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->conversationsView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->conversationsView->setUniformRowHeights(true);
     ui->conversationsView->setModel(conversationsTreeModel);
+
+    connect(conversationsTreeModel, SIGNAL(submitted()), this, SLOT(reloadModels()));
 }
 
 void MainWindow::newFile()
@@ -90,6 +92,8 @@ void MainWindow::newFile()
             this, tr("New File"),
             desktopServices.storageLocation(QDesktopServices::DocumentsLocation),
             tr("Fabula Files (*.fabula)"));
+    if (QFile::exists(fileName))
+        QFile::remove(fileName);
     openFile(fileName);
 }
 
@@ -108,12 +112,7 @@ void MainWindow::openFile(QString fileName)
         }
         database = new Database(fileName);
         settings.setValue("database", fileName);
-        if (eventsModel) {
-            eventsModel->select();
-        }
-        if (conversationsTableModel) {
-            conversationsTableModel->select();
-        }
+        reloadModels();
         setWindowTitle(QString("%1 - Fabula").arg(fileName));
         ui->centralWidget->setEnabled(true);
     }
@@ -126,6 +125,9 @@ void MainWindow::openFile(QString fileName)
 
 void MainWindow::filterOnConversation(const QModelIndex& index)
 {
+    if (!conversationsTreeModel || !eventsModel)
+        return;
+
     QString filter;
     if (index.parent().isValid())
         //FIXME: Nasty table names
@@ -148,13 +150,6 @@ void MainWindow::deleteEvent()
 
 void MainWindow::addToConversationTree()
 {
-    qDebug() << ui->conversationsView->currentIndex().row();
-    qDebug() << ui->conversationsView->currentIndex().column();
-    qDebug() << ui->conversationsView->currentIndex().isValid();
-    qDebug() << ui->conversationsView->currentIndex().parent().row();
-    qDebug() << ui->conversationsView->currentIndex().parent().column();
-    qDebug() << ui->conversationsView->currentIndex().parent().isValid();
-
     conversationsTreeModel->insertRow(ui->conversationsView->currentIndex().row(),
                                       ui->conversationsView->currentIndex().parent());
 }
@@ -163,6 +158,17 @@ void MainWindow::removeFromConversationTree()
 {
     conversationsTreeModel->removeRow(ui->conversationsView->currentIndex().row(),
                                       ui->conversationsView->currentIndex().parent());
+}
+
+void MainWindow::reloadModels()
+{
+    qDebug() << "Reloading...";
+    if (eventsModel)
+        eventsModel->select();
+    if (conversationsTableModel)
+        conversationsTableModel->select();
+    if (ui->conversationsView)
+        filterOnConversation(ui->conversationsView->currentIndex());
 }
 
 MainWindow::~MainWindow()

@@ -31,6 +31,7 @@ public slots:
     void deleteEvent();
     void addToConversationTree();
     void removeFromConversationTree();
+    void reloadModels();
 
 protected:
     void changeEvent(QEvent *e);
