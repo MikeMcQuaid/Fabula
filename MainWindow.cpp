@@ -12,18 +12,12 @@
 #include <QDebug>
 #include <QSortFilterProxyModel>
 
-class QSqlRelationalTableModelDebug : public QSqlRelationalTableModel
-{
-public:
-    virtual QString selectStatement() { return QSqlRelationalTableModel::selectStatement(); }
-};
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     database(0),
     eventsModel(0),
-    conversationsTableModel(0)
+    conversationsModel(0)
 {
     ui->setupUi(this);
 
@@ -37,8 +31,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDelete_Event, SIGNAL(triggered()), this, SLOT(deleteEvent()));
     connect(ui->actionAdd_Conversation, SIGNAL(triggered()), this, SLOT(addToConversationTree()));
     connect(ui->actionDelete_Conversation, SIGNAL(triggered()), this, SLOT(removeFromConversationTree()));
-    connect(ui->actionAdd_Character, SIGNAL(triggered()), this, SLOT(addToConversationTree()));
-    connect(ui->actionDelete_Character, SIGNAL(triggered()), this, SLOT(removeFromConversationTree()));
 
     connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
             this, SLOT(filterOnConversation(QModelIndex)));
@@ -52,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
         openFile(fileName);
     }
 
-    eventsModel = new QSqlRelationalTableModelDebug();
+    eventsModel = new QSqlRelationalTableModel();
     eventsModel->setTable("events");
     eventsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
@@ -68,22 +60,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
     eventsModel->select();
 
-    eventsFilter = new QSortFilterProxyModel(this);
-    eventsFilter->setSourceModel(eventsModel);
-    eventsFilter->setDynamicSortFilter(true);
-
     ui->eventsView->setModel(eventsModel);
     ui->eventsView->setItemDelegate(new QSqlRelationalDelegate(ui->eventsView));
-    //ui->eventsView->hideColumn(0);
+    ui->eventsView->hideColumn(0);
     ui->eventsView->resizeColumnsToContents();
     ui->eventsView->setWordWrap(true);
 
-    conversationsTreeModel = new TreeModel(this);
+    conversationsModel = new SqlTreeModel(this);
     ui->conversationsView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->conversationsView->setUniformRowHeights(true);
-    ui->conversationsView->setModel(conversationsTreeModel);
+    ui->conversationsView->setModel(conversationsModel);
 
-    connect(conversationsTreeModel, SIGNAL(submitted()), this, SLOT(reloadModels()));
+    connect(conversationsModel, SIGNAL(submitted()), this, SLOT(reloadEvents()));
 }
 
 void MainWindow::newFile()
@@ -112,7 +100,9 @@ void MainWindow::openFile(QString fileName)
         }
         database = new Database(fileName);
         settings.setValue("database", fileName);
-        reloadModels();
+        reloadEvents();
+        if (conversationsModel)
+            conversationsModel->reset();
         setWindowTitle(QString("%1 - Fabula").arg(fileName));
         ui->centralWidget->setEnabled(true);
     }
@@ -125,16 +115,16 @@ void MainWindow::openFile(QString fileName)
 
 void MainWindow::filterOnConversation(const QModelIndex& index)
 {
-    if (!conversationsTreeModel || !eventsModel)
+    if (!conversationsModel || !eventsModel)
         return;
 
     QString filter;
     if (index.parent().isValid())
         //FIXME: Nasty table names
-        filter = QString("relTblAl_1.name='%1'").arg(conversationsTreeModel->data(index).toString());
+        filter = QString("relTblAl_1.name='%1'").arg(conversationsModel->data(index).toString());
     else
         //FIXME: Nasty table names
-        filter = QString("relTblAl_2.name='%1'").arg(conversationsTreeModel->data(index).toString());
+        filter = QString("relTblAl_2.name='%1'").arg(conversationsModel->data(index).toString());
     eventsModel->setFilter(filter);
 }
 
@@ -150,23 +140,20 @@ void MainWindow::deleteEvent()
 
 void MainWindow::addToConversationTree()
 {
-    conversationsTreeModel->insertRow(ui->conversationsView->currentIndex().row(),
+    conversationsModel->insertRow(ui->conversationsView->currentIndex().row(),
                                       ui->conversationsView->currentIndex().parent());
 }
 
 void MainWindow::removeFromConversationTree()
 {
-    conversationsTreeModel->removeRow(ui->conversationsView->currentIndex().row(),
+    conversationsModel->removeRow(ui->conversationsView->currentIndex().row(),
                                       ui->conversationsView->currentIndex().parent());
 }
 
-void MainWindow::reloadModels()
+void MainWindow::reloadEvents()
 {
-    qDebug() << "Reloading...";
     if (eventsModel)
         eventsModel->select();
-    if (conversationsTableModel)
-        conversationsTableModel->select();
     if (ui->conversationsView)
         filterOnConversation(ui->conversationsView->currentIndex());
 }

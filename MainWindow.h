@@ -13,9 +13,7 @@ namespace Ui {
 
 class Database;
 class QSqlRelationalTableModel;
-class QSqlRelationalTableModelDebug;
-class QSortFilterProxyModel;
-class TreeModel;
+class SqlTreeModel;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -31,7 +29,7 @@ public slots:
     void deleteEvent();
     void addToConversationTree();
     void removeFromConversationTree();
-    void reloadModels();
+    void reloadEvents();
 
 protected:
     void changeEvent(QEvent *e);
@@ -39,12 +37,10 @@ protected:
 private:
     Ui::MainWindow *ui;
     Database *database;
-    QSqlRelationalTableModelDebug *eventsModel;
-    QSqlRelationalTableModelDebug *conversationsTableModel;
-    QSortFilterProxyModel *eventsFilter;
+    QSqlRelationalTableModel *eventsModel;
     QSettings settings;
     QDesktopServices desktopServices;
-    TreeModel *conversationsTreeModel;
+    SqlTreeModel *conversationsModel;
 };
 
 #endif // MAINWINDOW_H

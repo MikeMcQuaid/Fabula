@@ -155,8 +155,6 @@
     <addaction name="actionAdd_Event"/>
     <addaction name="actionDelete_Event"/>
     <addaction name="separator"/>
-    <addaction name="actionAdd_Character"/>
-    <addaction name="actionDelete_Character"/>
     <addaction name="separator"/>
     <addaction name="actionAdd_Conversation"/>
     <addaction name="actionDelete_Conversation"/>
@@ -188,6 +186,11 @@
    <addaction name="actionNew"/>
    <addaction name="actionOpen"/>
    <addaction name="actionQuit"/>
+   <addaction name="separator"/>
+   <addaction name="actionAdd_Conversation"/>
+   <addaction name="actionDelete_Conversation"/>
+   <addaction name="actionAdd_Event"/>
+   <addaction name="actionDelete_Event"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="enabled">
@@ -245,6 +248,10 @@
    </property>
   </action>
   <action name="actionAdd_Event">
+   <property name="icon">
+    <iconset resource="Fabula.qrc">
+     <normaloff>:/icons/edit-table-insert-row-under.png</normaloff>:/icons/edit-table-insert-row-under.png</iconset>
+   </property>
    <property name="text">
     <string>Add Event</string>
    </property>
@@ -253,6 +260,10 @@
    </property>
   </action>
   <action name="actionDelete_Event">
+   <property name="icon">
+    <iconset resource="Fabula.qrc">
+     <normaloff>:/icons/edit-table-delete-row.png</normaloff>:/icons/edit-table-delete-row.png</iconset>
+   </property>
    <property name="text">
     <string>Delete Event</string>
    </property>
@@ -260,22 +271,23 @@
     <string>Delete Event</string>
    </property>
   </action>
-  <action name="actionAdd_Character">
-   <property name="text">
-    <string>Add Character</string>
-   </property>
-  </action>
-  <action name="actionDelete_Character">
-   <property name="text">
-    <string>Delete Character</string>
-   </property>
-  </action>
   <action name="actionAdd_Conversation">
+   <property name="icon">
+    <iconset resource="Fabula.qrc">
+     <normaloff>:/icons/list-add-user.png</normaloff>:/icons/list-add-user.png</iconset>
+   </property>
    <property name="text">
     <string>Add Conversation</string>
    </property>
+   <property name="toolTip">
+    <string>Add Character/Conversation</string>
+   </property>
   </action>
   <action name="actionDelete_Conversation">
+   <property name="icon">
+    <iconset resource="Fabula.qrc">
+     <normaloff>:/icons/list-remove-user.png</normaloff>:/icons/list-remove-user.png</iconset>
+   </property>
    <property name="text">
     <string>Delete Conversation</string>
    </property>

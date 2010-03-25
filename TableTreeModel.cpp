@@ -6,86 +6,108 @@
 #include <QSqlError>
 #include <QMultiMap>
 
-TreeItem::TreeItem(const QString &data, TreeItem *parent, qint64 id)
-    : m_data(data), m_parent(parent), m_id(id), m_dirty(false)
+SqlTreeItem::SqlTreeItem(const QString &data, const QString &table, SqlTreeItem *parent, qint64 id)
+    : m_table(table), m_data(data), m_parent(parent), m_id(id), m_dirty(false)
 {
 }
 
-TreeItem::~TreeItem()
+SqlTreeItem::~SqlTreeItem()
 {
     if (m_parent)
         m_parent->m_children.removeAll(this);
     qDeleteAll(m_children);
 }
 
-TreeItem *TreeItem::child(int row)
+SqlTreeItem *SqlTreeItem::child(int row)
 {
     return m_children.value(row);
 }
 
-void TreeItem::appendChild(TreeItem* child)
+void SqlTreeItem::appendChild(SqlTreeItem* child)
 {
     m_children.append(child);
 }
 
-int TreeItem::childCount() const
+int SqlTreeItem::childCount() const
 {
     return m_children.count();
 }
 
-int TreeItem::row() const
+int SqlTreeItem::row() const
 {
     if (m_parent)
-        return m_parent->m_children.indexOf(const_cast<TreeItem*>(this));
+        return m_parent->m_children.indexOf(const_cast<SqlTreeItem*>(this));
 
     return 0;
 }
 
-const QString &TreeItem::data() const
+const QString &SqlTreeItem::table() const
+{
+    return m_table;
+}
+
+const QString &SqlTreeItem::data() const
 {
     return m_data;
 }
 
-qint64 TreeItem::id() const
+qint64 SqlTreeItem::id() const
 {
     return m_id;
 }
 
-void TreeItem::setId(qint64 id)
+void SqlTreeItem::setId(qint64 id)
 {
     m_id = id;
 }
 
-TreeItem *TreeItem::parent()
+SqlTreeItem *SqlTreeItem::parent()
 {
     return m_parent;
 }
 
-void TreeItem::setData(const QString &data)
+void SqlTreeItem::setData(const QString &data)
 {
     m_data = data;
     m_dirty = true;
 }
 
-bool TreeItem::dirty() const
+bool SqlTreeItem::dirty() const
 {
     return m_dirty;
 }
 
-void TreeItem::setDirty(bool dirty)
+void SqlTreeItem::setDirty(bool dirty)
 {
     m_dirty = dirty;
 }
 
-const QList<TreeItem*>& TreeItem::children() const
+const QList<SqlTreeItem*>& SqlTreeItem::children() const
 {
     return m_children;
 }
 
-TreeModel::TreeModel(QObject *parent)
-    : QAbstractItemModel(parent)
+SqlTreeModel::SqlTreeModel(QObject *parent)
+    : QAbstractItemModel(parent), m_rootItem(0)
 {
-    root = new TreeItem("Conversations");
+    loadData();
+}
+
+void SqlTreeModel::reset()
+{
+    beginResetModel();
+    tables.clear();
+    delete m_rootItem;
+    loadData();
+    endResetModel();
+}
+
+void SqlTreeModel::loadData()
+{
+    tables.append("characters");
+    tables.append("conversations");
+
+    m_rootItem = new SqlTreeItem("Conversations");
 
     QSqlQuery query;
     QMultiMap<QString, QString> charactersConversations;
@@ -109,75 +131,75 @@ TreeModel::TreeModel(QObject *parent)
 
     foreach(const QString& characterName, charactersConversations.keys()) {
         const qint64 characterId = charactersIds.value(characterName);
-        TreeItem* character = new TreeItem(characterName, root, characterId);
-        root->appendChild(character);
+        SqlTreeItem* character = new SqlTreeItem(characterName, "characters", m_rootItem, characterId);
+        m_rootItem->appendChild(character);
         foreach(const QString& conversationName, charactersConversations.values(characterName)) {
             const qint64 conversationId = conversationsIds.value(conversationName);
-            TreeItem* conversation = new TreeItem(conversationName, character, conversationId);
+            SqlTreeItem* conversation = new SqlTreeItem(conversationName, "conversations", character, conversationId);
             character->appendChild(conversation);
         }
     }
 }
 
-TreeModel::~TreeModel()
+SqlTreeModel::~SqlTreeModel()
 {
-    delete root;
+    delete m_rootItem;
 }
 
-QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent)
+QModelIndex SqlTreeModel::index(int row, int column, const QModelIndex &parent)
         const
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    TreeItem *parentItem;
+    SqlTreeItem *parentItem;
 
     if (!parent.isValid())
-        parentItem = root;
+        parentItem = m_rootItem;
     else
-        parentItem = static_cast<TreeItem*>(parent.internalPointer());
+        parentItem = static_cast<SqlTreeItem*>(parent.internalPointer());
 
-    TreeItem *childItem = parentItem->child(row);
+    SqlTreeItem *childItem = parentItem->child(row);
     if (childItem)
         return createIndex(row, column, childItem);
     else
         return QModelIndex();
 }
 
-QModelIndex TreeModel::parent(const QModelIndex &index) const
+QModelIndex SqlTreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
         return QModelIndex();
 
-    TreeItem *childItem = static_cast<TreeItem*>(index.internalPointer());
-    TreeItem *parentItem = childItem->parent();
+    SqlTreeItem *childItem = static_cast<SqlTreeItem*>(index.internalPointer());
+    SqlTreeItem *parentItem = childItem->parent();
 
-    if (parentItem == root)
+    if (parentItem == m_rootItem)
         return QModelIndex();
 
     return createIndex(parentItem->row(), 0, parentItem);
 }
 
-int TreeModel::rowCount(const QModelIndex &parent) const
+int SqlTreeModel::rowCount(const QModelIndex &parent) const
 {
-    TreeItem *parentItem;
+    SqlTreeItem *parentItem;
     if (parent.column() > 0)
         return 0;
 
     if (!parent.isValid())
-        parentItem = root;
+        parentItem = m_rootItem;
     else
-        parentItem = static_cast<TreeItem*>(parent.internalPointer());
+        parentItem = static_cast<SqlTreeItem*>(parent.internalPointer());
 
     return parentItem->childCount();
 }
 
-int TreeModel::columnCount(const QModelIndex&) const
+int SqlTreeModel::columnCount(const QModelIndex&) const
 {
     return 1;
 }
 
-QVariant TreeModel::data(const QModelIndex &index, int role) const
+QVariant SqlTreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
@@ -185,12 +207,12 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
     if (role != Qt::DisplayRole)
         return QVariant();
 
-    TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
+    SqlTreeItem *item = static_cast<SqlTreeItem*>(index.internalPointer());
 
     return item->data();
 }
 
-bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool SqlTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (!index.isValid())
         return false;
@@ -201,28 +223,55 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
     if (value.toString().isEmpty())
         return false;
 
-    TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
-    item->setData(value.toString());
+    SqlTreeItem *item = static_cast<SqlTreeItem*>(index.internalPointer());
+    const int id = item->id();
+
+    if (id != SqlTreeItem::INVALID_ID) {
+        foreach (SqlTreeItem* characterItem, m_rootItem->children()) {
+            if (id == characterItem->id())
+                characterItem->setData(value.toString());
+            foreach (SqlTreeItem* conversationItem, characterItem->children()) {
+                if (id == conversationItem->id())
+                    conversationItem->setData(value.toString());
+            }
+        }
+    }
+    else
+        item->setData(value.toString());
 
     emit dataChanged(index, index);
     return true;
 }
 
-bool TreeModel::insertRow(int, const QModelIndex &parent)
+bool SqlTreeModel::insertRow(int, const QModelIndex &parent)
 {
-    TreeItem *parentItem = static_cast<TreeItem*>(parent.internalPointer());
+    SqlTreeItem *parentItem = static_cast<SqlTreeItem*>(parent.internalPointer());
     if (!parentItem)
-        parentItem = root;
+        parentItem = m_rootItem;
 
     beginInsertRows(parent, 0, parentItem->childCount());
-    TreeItem* newItem = new TreeItem("New Item", parentItem);
+    const QString newItemTable = getChildTable(parentItem->table());
+
+    SqlTreeItem* newItem = new SqlTreeItem("New Item", newItemTable, parentItem);
     newItem->setDirty(true);
     parentItem->appendChild(newItem);
     endInsertRows();
     return true;
 }
 
-Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
+QString SqlTreeModel::getChildTable(const QString& parentTable)
+{
+    QString previousTable;
+    foreach(const QString& table, tables) {
+        if (parentTable == previousTable)
+            return table;
+        previousTable = table;
+    }
+    return QString();
+}
+
+
+Qt::ItemFlags SqlTreeModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
         return 0;
@@ -230,38 +279,38 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
 }
 
-QVariant TreeModel::headerData(int, Qt::Orientation orientation,
+QVariant SqlTreeModel::headerData(int, Qt::Orientation orientation,
                                int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-        return root->data();
+        return m_rootItem->data();
 
     return QVariant();
 }
 
-bool TreeModel::submit()
+bool SqlTreeModel::submit()
 {
-    QList<TreeItem*> newCharacters;
-    QList<TreeItem*> newConversations;
-    QList<TreeItem*> updatedCharacters;
-    QList<TreeItem*> updatedConversations;
+    QList<SqlTreeItem*> newCharacters;
+    QList<SqlTreeItem*> newConversations;
+    QList<SqlTreeItem*> updatedCharacters;
+    QList<SqlTreeItem*> updatedConversations;
 
-    foreach (TreeItem* characterItem, root->children()) {
+    foreach (SqlTreeItem* characterItem, m_rootItem->children()) {
         if (characterItem->data() == "New Item")
             continue;
 
         if (characterItem->dirty()) {
-            if (characterItem->id() == TreeItem::INVALID_ID)
+            if (characterItem->id() == SqlTreeItem::INVALID_ID)
                 newCharacters.append(characterItem);
             else
                 updatedCharacters.append(characterItem);
         }
-        foreach (TreeItem* conversationItem, characterItem->children()) {
+        foreach (SqlTreeItem* conversationItem, characterItem->children()) {
             if (conversationItem->data() == "New Item")
                 continue;
 
             if (conversationItem->dirty()) {
-                if (conversationItem->id() == TreeItem::INVALID_ID)
+                if (conversationItem->id() == SqlTreeItem::INVALID_ID)
                     newConversations.append(conversationItem);
                 else
                     updatedConversations.append(conversationItem);
@@ -272,7 +321,7 @@ bool TreeModel::submit()
     QSqlQuery query;
     bool querySuccess = false;
 
-    foreach (TreeItem* newCharacter, newCharacters) {
+    foreach (SqlTreeItem* newCharacter, newCharacters) {
         query.prepare("insert into characters(name) values(:name)");
         query.bindValue(":name", newCharacter->data());
         querySuccess = query.exec();
@@ -284,7 +333,7 @@ bool TreeModel::submit()
             qWarning() << query.lastQuery() << query.lastError();
     }
 
-    foreach (TreeItem* newConversation, newConversations) {
+    foreach (SqlTreeItem* newConversation, newConversations) {
         query.prepare("insert into conversations(name) values(:name)");
         query.bindValue(":name", newConversation->data());
         querySuccess = query.exec();
@@ -298,7 +347,7 @@ bool TreeModel::submit()
 
     // TODO: Check we update at least one row
 
-    foreach (TreeItem* updatedCharacter, updatedCharacters) {
+    foreach (SqlTreeItem* updatedCharacter, updatedCharacters) {
         query.prepare("update characters set name=:name where id=:id");
         query.bindValue(":name", updatedCharacter->data());
         query.bindValue(":id", updatedCharacter->id());
@@ -309,7 +358,7 @@ bool TreeModel::submit()
             qWarning() << query.lastQuery() << query.lastError();
     }
 
-    foreach (TreeItem* updatedConversation, updatedConversations) {
+    foreach (SqlTreeItem* updatedConversation, updatedConversations) {
         query.prepare("update conversations set name=:name where id=:id");
         query.bindValue(":name", updatedConversation->data());
         query.bindValue(":id", updatedConversation->id());

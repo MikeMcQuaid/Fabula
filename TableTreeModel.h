@@ -2,43 +2,46 @@
 #define TABLETREEMODEL_H
 
 #include <QAbstractItemModel>
+#include <QStringList>
 
-class TreeItem
+class SqlTreeItem
 {
 public:
     static const qint64 INVALID_ID = -1;
 
-    TreeItem(const QString &data, TreeItem *parent = 0, qint64 id = INVALID_ID);
-    ~TreeItem();
+    SqlTreeItem(const QString &data, const QString &table = QString(), SqlTreeItem *parent = 0, qint64 id = INVALID_ID);
+    ~SqlTreeItem();
 
-    TreeItem *child(int row);
-    void appendChild(TreeItem* child);
+    SqlTreeItem *child(int row);
+    void appendChild(SqlTreeItem* child);
     int childCount() const;
+    const QString &table() const;
     const QString &data() const;
     int row() const;
-    TreeItem *parent();
+    SqlTreeItem *parent();
     void setData(const QString &value);
     qint64 id() const;
     void setId(qint64 id);
     bool dirty() const;
     void setDirty(bool dirty);
-    const QList<TreeItem*>& children() const;
+    const QList<SqlTreeItem*>& children() const;
 
 private:
-    QList<TreeItem*> m_children;
+    QList<SqlTreeItem*> m_children;
+    QString m_table;
     QString m_data;
-    TreeItem *m_parent;
+    SqlTreeItem *m_parent;
     int m_id;
     bool m_dirty;
 };
 
-class TreeModel : public QAbstractItemModel
+class SqlTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
 
 public:
-    TreeModel(QObject *parent = 0);
-    ~TreeModel();
+    SqlTreeModel(QObject *parent = 0);
+    ~SqlTreeModel();
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role);
@@ -52,12 +55,16 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     bool insertRow(int row, const QModelIndex &parent = QModelIndex());
     bool submit();
+    void reset();
 
 signals:
     void submitted();
 
 private:
-    TreeItem *root;
+    void loadData();
+    QString getChildTable(const QString& parentTable);
+    SqlTreeItem *m_rootItem;
+    QStringList tables;
 };
 
 #endif // TABLETREEMODEL_H
