@@ -6,7 +6,9 @@
 class TreeItem
 {
 public:
-    TreeItem(const QString &data, TreeItem *parent = 0);
+    static const qint64 INVALID_ID = -1;
+
+    TreeItem(const QString &data, TreeItem *parent = 0, qint64 id = INVALID_ID);
     ~TreeItem();
 
     TreeItem *child(int row);
@@ -16,11 +18,18 @@ public:
     int row() const;
     TreeItem *parent();
     void setData(const QString &value);
+    qint64 id() const;
+    void setId(qint64 id);
+    bool dirty() const;
+    void setDirty(bool dirty);
+    const QList<TreeItem*>& children() const;
 
 private:
     QList<TreeItem*> m_children;
     QString m_data;
     TreeItem *m_parent;
+    int m_id;
+    bool m_dirty;
 };
 
 class TreeModel : public QAbstractItemModel
@@ -42,6 +51,7 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     bool insertRow(int row, const QModelIndex &parent = QModelIndex());
+    bool submit();
 
 private:
     TreeItem *root;

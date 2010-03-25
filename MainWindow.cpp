@@ -148,6 +148,13 @@ void MainWindow::deleteEvent()
 
 void MainWindow::addToConversationTree()
 {
+    qDebug() << ui->conversationsView->currentIndex().row();
+    qDebug() << ui->conversationsView->currentIndex().column();
+    qDebug() << ui->conversationsView->currentIndex().isValid();
+    qDebug() << ui->conversationsView->currentIndex().parent().row();
+    qDebug() << ui->conversationsView->currentIndex().parent().column();
+    qDebug() << ui->conversationsView->currentIndex().parent().isValid();
+
     conversationsTreeModel->insertRow(ui->conversationsView->currentIndex().row(),
                                       ui->conversationsView->currentIndex().parent());
 }

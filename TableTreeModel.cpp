@@ -3,12 +3,12 @@
 #include <QStringList>
 #include <QDebug>
 #include <QSqlQuery>
+#include <QSqlError>
 #include <QMultiMap>
 
-TreeItem::TreeItem(const QString &data, TreeItem *parent)
+TreeItem::TreeItem(const QString &data, TreeItem *parent, qint64 id)
+    : m_data(data), m_parent(parent), m_id(id), m_dirty(false)
 {
-    m_data = data;
-    m_parent = parent;
 }
 
 TreeItem::~TreeItem()
@@ -46,6 +46,16 @@ const QString &TreeItem::data() const
     return m_data;
 }
 
+qint64 TreeItem::id() const
+{
+    return m_id;
+}
+
+void TreeItem::setId(qint64 id)
+{
+    m_id = id;
+}
+
 TreeItem *TreeItem::parent()
 {
     return m_parent;
@@ -54,6 +64,22 @@ TreeItem *TreeItem::parent()
 void TreeItem::setData(const QString &data)
 {
     m_data = data;
+    m_dirty = true;
+}
+
+bool TreeItem::dirty() const
+{
+    return m_dirty;
+}
+
+void TreeItem::setDirty(bool dirty)
+{
+    m_dirty = dirty;
+}
+
+const QList<TreeItem*>& TreeItem::children() const
+{
+    return m_children;
 }
 
 TreeModel::TreeModel(QObject *parent)
@@ -63,21 +89,31 @@ TreeModel::TreeModel(QObject *parent)
 
     QSqlQuery query;
     QMultiMap<QString, QString> charactersConversations;
+    QMap<QString, qint64> charactersIds;
+    QMap<QString, qint64> conversationsIds;
 
-    query.exec("select characters.name, conversations.name from events "
+    // TODO: Make this generic and recursive
+    query.exec("select characters.id, conversations.id, characters.name, conversations.name from events "
                "inner join characters on events.character_id = characters.id "
                "inner join conversations on events.conversation_id = conversations.id");
+    // TODO: Use indexOf("fieldname")
     while (query.next()) {
-        const QString characterName = query.value(0).toString();
-        const QString conversationName = query.value(1).toString();
+        const qint64 characterId = query.value(0).toLongLong();
+        const qint64 conversationId = query.value(1).toLongLong();
+        const QString characterName = query.value(2).toString();
+        const QString conversationName = query.value(3).toString();
         charactersConversations.insert(characterName, conversationName);
+        charactersIds.insert(characterName, characterId);
+        conversationsIds.insert(conversationName, conversationId);
     }
 
     foreach(const QString& characterName, charactersConversations.keys()) {
-        TreeItem* character = new TreeItem(characterName, root);
+        const qint64 characterId = charactersIds.value(characterName);
+        TreeItem* character = new TreeItem(characterName, root, characterId);
         root->appendChild(character);
         foreach(const QString& conversationName, charactersConversations.values(characterName)) {
-            TreeItem* conversation = new TreeItem(conversationName, character);
+            const qint64 conversationId = conversationsIds.value(conversationName);
+            TreeItem* conversation = new TreeItem(conversationName, character, conversationId);
             character->appendChild(conversation);
         }
     }
@@ -169,7 +205,6 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
     TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
     item->setData(value.toString());
 
-    // TODO: Actually write to the SQL database
     emit dataChanged(index, index);
     return true;
 }
@@ -178,10 +213,12 @@ bool TreeModel::insertRow(int, const QModelIndex &parent)
 {
     TreeItem *parentItem = static_cast<TreeItem*>(parent.internalPointer());
     if (!parentItem)
-        return false;
+        parentItem = root;
 
     beginInsertRows(parent, 0, parentItem->childCount());
-    parentItem->appendChild(new TreeItem("New Item", parentItem));
+    TreeItem* newItem = new TreeItem("New Item", parentItem);
+    newItem->setDirty(true);
+    parentItem->appendChild(newItem);
     endInsertRows();
     return true;
 }
@@ -201,5 +238,95 @@ QVariant TreeModel::headerData(int, Qt::Orientation orientation,
         return root->data();
 
     return QVariant();
+}
+
+bool TreeModel::submit()
+{
+    QList<TreeItem*> newCharacters;
+    QList<TreeItem*> newConversations;
+    QList<TreeItem*> updatedCharacters;
+    QList<TreeItem*> updatedConversations;
+
+    foreach (TreeItem* characterItem, root->children()) {
+        if (characterItem->data() == "New Item")
+            continue;
+
+        if (characterItem->dirty()) {
+            qDebug() << "DIRTYCHARACTER:" << characterItem->data();
+            if (characterItem->id() == TreeItem::INVALID_ID)
+                newCharacters.append(characterItem);
+            else
+                updatedCharacters.append(characterItem);
+        }
+        foreach (TreeItem* conversationItem, characterItem->children()) {
+            if (conversationItem->data() == "New Item")
+                continue;
+
+            if (conversationItem->dirty()) {
+                qDebug() << "DIRTYCONVERSATION:" << conversationItem->data();
+                if (conversationItem->id() == TreeItem::INVALID_ID)
+                    newConversations.append(conversationItem);
+                else
+                    updatedConversations.append(conversationItem);
+            }
+        }
+    }
+
+    QSqlQuery query;
+    bool querySuccess = false;
+
+    foreach (TreeItem* newCharacter, newCharacters) {
+        query.prepare("insert into characters(name) values(:name)");
+        query.bindValue(":name", newCharacter->data());
+        querySuccess = query.exec();
+        if (querySuccess) {
+            newCharacter->setId(query.lastInsertId().toInt());
+            newCharacter->setDirty(false);
+        }
+        else
+            qWarning() << query.lastQuery() << query.lastError();
+    }
+
+    foreach (TreeItem* newConversation, newConversations) {
+        query.prepare("insert into conversations(name) values(:name)");
+        query.bindValue(":name", newConversation->data());
+        querySuccess = query.exec();
+        if (querySuccess) {
+            newConversation->setId(query.lastInsertId().toInt());
+            newConversation->setDirty(false);
+        }
+        else
+            qWarning() << query.lastQuery() << query.lastError();
+    }
+
+    // TODO: Check we update at least one row
+
+    foreach (TreeItem* updatedCharacter, updatedCharacters) {
+        qDebug() << "UPDATING:" << updatedCharacter->data();
+        query.prepare("update characters set name=:name where id=:id");
+        query.bindValue(":name", updatedCharacter->data());
+        query.bindValue(":id", updatedCharacter->id());
+        querySuccess = query.exec();
+        qDebug() << query.executedQuery() << updatedCharacter->data() << updatedCharacter->id();
+        if (querySuccess)
+            updatedCharacter->setDirty(false);
+        else
+            qWarning() << query.lastQuery() << query.lastError();
+    }
+
+    foreach (TreeItem* updatedConversation, updatedConversations) {
+        qDebug() << "UPDATING:" << updatedConversation->data();
+        query.prepare("update conversations set name=:name where id=:id");
+        query.bindValue(":name", updatedConversation->data());
+        query.bindValue(":id", updatedConversation->id());
+        querySuccess = query.exec();
+        qDebug() << query.executedQuery();
+        if (querySuccess)
+            updatedConversation->setDirty(false);
+        else
+            qWarning() << query.lastQuery() << query.lastError();
+    }
+
+    return true;
 }
 
