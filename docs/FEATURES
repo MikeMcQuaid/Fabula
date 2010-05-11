@@ -1,0 +1,22 @@
+The required features for Fabula are as follows:
+    * display the branches and jumps of a mostly linear yet still interactive
+      conversation clearly and unambiguously
+    * operate independently of a level editor (using variables to tie
+      dialogue to characters)
+    * support conversations with more than two characters and make it readily
+      clear who is speaking to whom
+    * be able to access, change, and create global variables and use them to
+      affect conversation flow
+    * be able to choose randomly between several possible nodes
+    * be able to export all or certain dialogue nodes to a professional script
+      format
+    * support developer comments and voice-over comments that can be included
+      in an exported script but not displayed during the game
+    * make it easy to associate the audio files with each node
+    * support choice nodes that can jump to anywhere in the dialogue files
+    * be able to add and edit the player's goals and objectives
+    * support HTML-style formatting tags (<b>, <i>, and potentially
+      text colors)
+    * keep track of which writer has written which dialogue node
+    * support several different conversation types: interactive dialogue, 
+      overheards, subsequents, and AI barks.
