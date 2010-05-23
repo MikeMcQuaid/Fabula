@@ -65,16 +65,15 @@ MainWindow::MainWindow(QWidget *parent) :
     eventsModel->setTable("events");
     eventsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
-    eventsModel->setRelation(1, QSqlRelation("event_types", "id", "name"));
-    eventsModel->setRelation(2, QSqlRelation("conversations", "id", "name"));
-    eventsModel->setRelation(3, QSqlRelation("characters", "id", "name"));
-    eventsModel->setRelation(4, QSqlRelation("audiofiles", "id", "url"));
-
     eventsModel->setHeaderData(0, Qt::Horizontal, tr("ID"));
     eventsModel->setHeaderData(1, Qt::Horizontal, tr("Type"));
+    eventsModel->setRelation(1, QSqlRelation("event_types", "id", "name"));
     eventsModel->setHeaderData(2, Qt::Horizontal, tr("Conversation"));
+    eventsModel->setRelation(2, QSqlRelation("conversations", "id", "name"));
     eventsModel->setHeaderData(3, Qt::Horizontal, tr("Character"));
+    eventsModel->setRelation(3, QSqlRelation("characters", "id", "name"));
     eventsModel->setHeaderData(4, Qt::Horizontal, tr("Audio File"));
+    eventsModel->setRelation(4, QSqlRelation("audiofiles", "id", "url"));
     eventsModel->setHeaderData(5, Qt::Horizontal, tr("Text"));
 
     eventsModel->select();
@@ -134,16 +133,20 @@ void MainWindow::openFile(QString fileName)
 
 void MainWindow::filterOnConversation(const QModelIndex& index)
 {
+    static const int conversationRow = 2;
+    static const int characterRow = 3;
+
     if (!conversationsModel || !eventsModel)
         return;
 
     QString filter;
+    int row = 0;
     if (index.parent().isValid())
-        //FIXME: Nasty table names
-        filter = QString("relTblAl_2.name='%1'").arg(conversationsModel->data(index).toString());
+        row = conversationRow;
     else
-        //FIXME: Nasty table names
-        filter = QString("relTblAl_3.name='%1'").arg(conversationsModel->data(index).toString());
+        row = characterRow;
+    const QString name = conversationsModel->data(index).toString();
+    filter = QString("relTblAl_%1.name='%2'").arg(row).arg(name);
     eventsModel->setFilter(filter);
 }
 
