@@ -146,6 +146,8 @@ void MainWindow::filterOnConversation(const QModelIndex& index)
     else
         row = characterRow;
     const QString name = conversationsModel->data(index).toString();
+    // The "relTblAl_" is from the QSqlRelationalTableModel source.
+    // This was needed as otherwise it's not obvious how to filter without breaking relations.
     filter = QString("relTblAl_%1.name='%2'").arg(row).arg(name);
     eventsModel->setFilter(filter);
 }
