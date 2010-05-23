@@ -75,6 +75,7 @@ bool Database::create()
 
     databaseStructure.insert("events",
                              "id int primary key, "
+                             "type int not null, "
                              "conversation_id int not null, "
                              "character_id int, "
                              "audiofile_id int, "
@@ -85,6 +86,10 @@ bool Database::create()
                              "url varchar(50)");
 
     databaseStructure.insert("conversation_types",
+                             "id int primary key, "
+                             "name varchar(20) unique");
+
+    databaseStructure.insert("event_types",
                              "id int primary key, "
                              "name varchar(20) unique");
 
@@ -112,15 +117,18 @@ bool Database::create()
     sqlQuery.exec("insert into conversations(id, type, writer_id, name) values (2, 2, 2, 'Conversation2')");
     sqlQuery.exec("insert into conversations_events(id, conversation_id, event_id, sort) values (1, 1, 1, 1)");
     sqlQuery.exec("insert into conversations_events(id, conversation_id, event_id, sort) values (2, 2, 2, 2)");
-    sqlQuery.exec("insert into events(id, conversation_id, character_id, audiofile_id, text) values (1, 1, 1, 1, 'Event')");
-    sqlQuery.exec("insert into events(id, conversation_id, character_id, audiofile_id, text) values (2, 2, 2, 2, 'Event2')");
-    sqlQuery.exec("insert into events(id, conversation_id, character_id, audiofile_id, text) values (3, 1, 3, 1, 'Event3')");
-    sqlQuery.exec("insert into events(id, conversation_id, character_id, audiofile_id, text) values (4, 2, 4, 1, 'Event4')");
-    sqlQuery.exec("insert into events(id, conversation_id, character_id, audiofile_id, text) values (5, 1, 5, 1, 'Event5')");
+    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (1, 1, 1, 1, 1, 'Event')");
+    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (2, 1, 2, 2, 2, 'Event2')");
+    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (3, 1, 1, 3, 1, 'Event3')");
+    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (4, 1, 2, 4, 1, 'Event4')");
+    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (5, 1, 1, 5, 1, 'Event5')");
     sqlQuery.exec("insert into audiofiles(id, url) values (1, 'AudioFile.mp4')");
     sqlQuery.exec("insert into audiofiles(id, url) values (2, 'AudioFile2.mp4')");
     sqlQuery.exec("insert into conversation_types(id, name) values (1, 'ConversationType')");
     sqlQuery.exec("insert into conversation_types(id, name) values (2, 'ConversationType2')");
+    sqlQuery.exec("insert into event_types(id, name) values (1, 'Speech')");
+    sqlQuery.exec("insert into event_types(id, name) values (2, 'Logic')");
+    sqlQuery.exec("insert into event_types(id, name) values (3, 'Comment')");
 
     return true;
 }
