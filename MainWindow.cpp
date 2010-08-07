@@ -20,11 +20,11 @@
 
 #include "Database.h"
 #include "TableTreeModel.h"
+#include "TwoRowDelegate.h"
 
 #include <QFileDialog>
 #include <QSqlRelationalTableModel>
 #include <QTableView>
-#include <QSqlRelationalDelegate>
 #include <QFile>
 #include <QDebug>
 #include <QSortFilterProxyModel>
@@ -78,8 +78,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     eventsModel->select();
 
+    TwoRowDelegate *eventsDelegate = new TwoRowDelegate();
+    ui->eventsView->setItemDelegate(eventsDelegate);
     ui->eventsView->setModel(eventsModel);
-    ui->eventsView->setItemDelegate(new QSqlRelationalDelegate(ui->eventsView));
     ui->eventsView->hideColumn(0);
     ui->eventsView->resizeColumnsToContents();
     ui->eventsView->setWordWrap(true);

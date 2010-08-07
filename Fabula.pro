@@ -8,10 +8,12 @@ DEFINES += QT_NO_CAST_TO_ASCII
 SOURCES += main.cpp \
     MainWindow.cpp \
     Database.cpp \
-    TableTreeModel.cpp
+    TableTreeModel.cpp \
+    TwoRowDelegate.cpp
 HEADERS += MainWindow.h \
     Database.h \
-    TableTreeModel.h
+    TableTreeModel.h \
+    TwoRowDelegate.h
 FORMS += MainWindow.ui
 RESOURCES += Fabula.qrc
 
