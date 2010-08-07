@@ -23,8 +23,8 @@
 #include <QSqlError>
 #include <QMultiMap>
 
-SqlTreeItem::SqlTreeItem(const QString &data, const QString &table, SqlTreeItem *parent, qint64 id)
-    : m_table(table), m_data(data), m_parent(parent), m_id(id), m_dirty(false)
+SqlTreeItem::SqlTreeItem(const QString &data, const QString &table, SqlTreeItem *parent, qint64 id, QPixmap icon)
+    : m_table(table), m_data(data), m_parent(parent), m_id(id), m_icon(icon), m_dirty(false)
 {
 }
 
@@ -104,6 +104,11 @@ const QList<SqlTreeItem*>& SqlTreeItem::children() const
     return m_children;
 }
 
+QPixmap SqlTreeItem::icon() const
+{
+    return m_icon;
+}
+
 SqlTreeModel::SqlTreeModel(QObject *parent)
     : QAbstractItemModel(parent), m_rootItem(0)
 {
@@ -131,6 +136,9 @@ void SqlTreeModel::loadData()
     QMap<QString, qint64> charactersIds;
     QMap<QString, qint64> conversationsIds;
 
+    QPixmap characterIcon(":/icons/view-media-artist.png");
+    QPixmap conversationIcon(":/icons/irc-voice.png");
+
     // TODO: Make this generic and recursive
     query.exec("select characters.id, conversations.id, characters.name, conversations.name from events "
                "inner join characters on events.character_id = characters.id "
@@ -148,11 +156,11 @@ void SqlTreeModel::loadData()
 
     foreach(const QString& characterName, charactersConversations.keys()) {
         const qint64 characterId = charactersIds.value(characterName);
-        SqlTreeItem* character = new SqlTreeItem(characterName, "characters", m_rootItem, characterId);
+        SqlTreeItem* character = new SqlTreeItem(characterName, "characters", m_rootItem, characterId, characterIcon);
         m_rootItem->appendChild(character);
         foreach(const QString& conversationName, charactersConversations.values(characterName)) {
             const qint64 conversationId = conversationsIds.value(conversationName);
-            SqlTreeItem* conversation = new SqlTreeItem(conversationName, "conversations", character, conversationId);
+            SqlTreeItem* conversation = new SqlTreeItem(conversationName, "conversations", character, conversationId, conversationIcon);
             character->appendChild(conversation);
         }
     }
@@ -221,12 +229,15 @@ QVariant SqlTreeModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
     SqlTreeItem *item = static_cast<SqlTreeItem*>(index.internalPointer());
 
-    return item->data();
+    if (role == Qt::DisplayRole)
+        return item->data();
+
+    if (role == Qt::DecorationRole)
+        return item->icon();
+
+    return QVariant();
 }
 
 bool SqlTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)

@@ -20,13 +20,14 @@
 
 #include <QAbstractItemModel>
 #include <QStringList>
+#include <QPixmap>
 
 class SqlTreeItem
 {
 public:
     static const qint64 INVALID_ID = -1;
 
-    SqlTreeItem(const QString &data, const QString &table = QString(), SqlTreeItem *parent = 0, qint64 id = INVALID_ID);
+    SqlTreeItem(const QString &data, const QString &table = QString(), SqlTreeItem *parent = 0, qint64 id = INVALID_ID, QPixmap icon = QPixmap());
     ~SqlTreeItem();
 
     SqlTreeItem *child(int row);
@@ -42,6 +43,7 @@ public:
     bool dirty() const;
     void setDirty(bool dirty);
     const QList<SqlTreeItem*>& children() const;
+    QPixmap icon() const;
 
 private:
     QList<SqlTreeItem*> m_children;
@@ -49,6 +51,7 @@ private:
     QString m_data;
     SqlTreeItem *m_parent;
     int m_id;
+    QPixmap m_icon;
     bool m_dirty;
 };
 

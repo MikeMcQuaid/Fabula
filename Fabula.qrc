@@ -8,5 +8,7 @@
         <file>icons/edit-table-insert-row-under.png</file>
         <file>icons/list-add-user.png</file>
         <file>icons/list-remove-user.png</file>
+        <file>icons/irc-voice.png</file>
+        <file>icons/view-media-artist.png</file>
     </qresource>
 </RCC>
