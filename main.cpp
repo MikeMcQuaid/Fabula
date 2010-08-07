@@ -1,5 +1,5 @@
 /*  This file is part of Fabula.
-    Copyright (C) 2010 Mike Arthur <mike@mikearthur.co.uk>
+    Copyright (C) 2010 Mike McQuaid <mike@mikemcquaid.com>
 
     Fabula is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
     QApplication application(argc, argv);
     application.setApplicationName(QString::fromAscii("Fabula"));
     application.setApplicationVersion(QString::fromAscii("0.1"));
-    application.setOrganizationDomain(QString::fromAscii("mikearthur.co.uk"));
-    application.setOrganizationName(QString::fromAscii("Mike Arthur"));
+    application.setOrganizationDomain(QString::fromAscii("mikemcquaid.com"));
+    application.setOrganizationName(QString::fromAscii("Mike McQuaid"));
 
     MainWindow mainWindow;
     mainWindow.show();
