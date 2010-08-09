@@ -82,7 +82,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->eventsView->setItemDelegate(eventsDelegate);
     ui->eventsView->setModel(eventsModel);
     ui->eventsView->hideColumn(0);
-    ui->eventsView->resizeColumnsToContents();
+    ui->eventsView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
     ui->eventsView->setWordWrap(true);
 
     conversationsModel = new SqlTreeModel(this);

@@ -27,12 +27,18 @@ TwoRowDelegate::TwoRowDelegate(QObject *parent) :
 
 void TwoRowDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    qDebug() << "paint called";
-    QSqlRelationalDelegate::paint(painter, option, index);
+    if (index.column() == 5) {
+        //FIXME: paint the text below the existing row
+        QSqlRelationalDelegate::paint(painter, option, index);
+    }
+    else {
+        QSqlRelationalDelegate::paint(painter, option, index);
+    }
 }
 
 QSize TwoRowDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    qDebug() << "sizeHint called";
-    return QSqlRelationalDelegate::sizeHint(option, index);
+    QSize size = QSqlRelationalDelegate::sizeHint(option, index);
+    size.rheight() *= 2;
+    return size;
 }
