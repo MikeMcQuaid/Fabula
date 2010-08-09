@@ -25,13 +25,13 @@ TwoRowDelegate::TwoRowDelegate(QObject *parent) :
 {
 }
 
-void TwoRowDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index)
+void TwoRowDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     qDebug() << "paint called";
     QSqlRelationalDelegate::paint(painter, option, index);
 }
 
-QSize TwoRowDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index)
+QSize TwoRowDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     qDebug() << "sizeHint called";
     return QSqlRelationalDelegate::sizeHint(option, index);

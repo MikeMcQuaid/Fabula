@@ -26,8 +26,14 @@ win32 {
 }
 
 !win32-msvc {
-    QMAKE_CXXFLAGS += -Wextra \
-        -Werror
+    QMAKE_CXXFLAGS += -Wall -Werror -Wextra
+        -Wold-style-cast -Wformat=2 -Winit-self \
+        -Wswitch-default -Wundef -Wpointer-arith \
+        -Wcast-qual -Wconversion -Wunused \
+        -Wmissing-format-attribute -Wredundant-decls \
+        -Winline -Wnon-virtual-dtor -Wsign-promo \
+        -Woverloaded-virtual -Wstrict-null-sentinel \
+        -Wno-pmf-conversions -Wctor-dtor-privacy
 }
 
 macx {
