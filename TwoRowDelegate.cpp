@@ -20,6 +20,7 @@
 #include <QPainter>
 #include <QStyleOptionViewItemV4>
 #include <QAbstractItemView>
+#include <QMouseEvent>
 #include <QDebug>
 
 TwoRowDelegate::TwoRowDelegate(int secondRowColumn, QAbstractItemView *view, QObject *parent) :
@@ -65,4 +66,23 @@ int TwoRowDelegate::secondRowHeight(const QStyleOptionViewItem &option, const QM
 QModelIndex TwoRowDelegate::secondRowIndex(const QModelIndex &index) const
 {
     return index.sibling(index.row(), m_column);
+}
+
+void TwoRowDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QSqlRelationalDelegate::updateEditorGeometry(editor, option, index);
+    editor->resize(firstRowSizeHint(option, index));
+}
+
+bool TwoRowDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
+{
+    QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+    if (!mouseEvent)
+        return QSqlRelationalDelegate::editorEvent(event, model, option, index);
+
+    QStyleOptionViewItemV4 firstRowOption(option);
+    firstRowOption.rect.setSize(firstRowSizeHint(option, index));
+    if (firstRowOption.rect.contains(mouseEvent->pos()))
+        return QSqlRelationalDelegate::editorEvent(event, model, firstRowOption, index);
+    return true;
 }

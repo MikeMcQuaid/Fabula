@@ -33,6 +33,8 @@ private:
     QSize firstRowSizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
     int secondRowHeight(const QStyleOptionViewItem &option, const QModelIndex &index) const;
     QModelIndex secondRowIndex(const QModelIndex &index) const;
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index);
     const int m_column;
     const QAbstractItemView *m_view;
 };
