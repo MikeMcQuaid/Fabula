@@ -18,27 +18,51 @@
 #include "TwoRowDelegate.h"
 
 #include <QPainter>
+#include <QStyleOptionViewItemV4>
+#include <QAbstractItemView>
 #include <QDebug>
 
-TwoRowDelegate::TwoRowDelegate(QObject *parent) :
-    QSqlRelationalDelegate(parent)
+TwoRowDelegate::TwoRowDelegate(int secondRowColumn, QAbstractItemView *view, QObject *parent) :
+    QSqlRelationalDelegate(parent), m_column(secondRowColumn), m_view(view)
 {
 }
 
 void TwoRowDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    if (index.column() == 5) {
-        //FIXME: paint the text below the existing row
-        QSqlRelationalDelegate::paint(painter, option, index);
+    if (index.column() == m_column)
+        return;
+
+    if (index.column() == 1) {
+        QStyleOptionViewItemV4 secondRowOption(option);
+        secondRowOption.rect.moveTop(secondRowHeight(option, index));
+        secondRowOption.rect.setHeight(secondRowHeight(option, index));
+        secondRowOption.rect.setWidth(m_view->width());
+        QSqlRelationalDelegate::paint(painter, secondRowOption, secondRowIndex(index));
     }
-    else {
-        QSqlRelationalDelegate::paint(painter, option, index);
-    }
+
+    QStyleOptionViewItemV4 firstRowOption(option);
+    firstRowOption.rect.setSize(firstRowSizeHint(option, index));
+    QSqlRelationalDelegate::paint(painter, firstRowOption, index);
 }
 
 QSize TwoRowDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    QSize size = QSqlRelationalDelegate::sizeHint(option, index);
-    size.rheight() *= 2;
-    return size;
+    QSize bothRowsSize = firstRowSizeHint(option, index);
+    bothRowsSize.rheight() += secondRowHeight(option, index);
+    return bothRowsSize;
+}
+
+QSize TwoRowDelegate::firstRowSizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    return QSqlRelationalDelegate::sizeHint(option, index);
+}
+
+int TwoRowDelegate::secondRowHeight(const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    return QSqlRelationalDelegate::sizeHint(option, secondRowIndex(index)).height();
+}
+
+QModelIndex TwoRowDelegate::secondRowIndex(const QModelIndex &index) const
+{
+    return index.sibling(index.row(), m_column);
 }

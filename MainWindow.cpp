@@ -78,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     eventsModel->select();
 
-    TwoRowDelegate *eventsDelegate = new TwoRowDelegate();
+    TwoRowDelegate *eventsDelegate = new TwoRowDelegate(5, ui->eventsView);
     ui->eventsView->setItemDelegate(eventsDelegate);
     ui->eventsView->setModel(eventsModel);
     ui->eventsView->hideColumn(0);
