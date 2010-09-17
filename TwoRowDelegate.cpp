@@ -77,12 +77,11 @@ void TwoRowDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionVie
 bool TwoRowDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
     QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-    if (!mouseEvent)
-        return QSqlRelationalDelegate::editorEvent(event, model, option, index);
-
-    QStyleOptionViewItemV4 firstRowOption(option);
-    firstRowOption.rect.setSize(firstRowSizeHint(option, index));
-    if (firstRowOption.rect.contains(mouseEvent->pos()))
-        return QSqlRelationalDelegate::editorEvent(event, model, firstRowOption, index);
-    return true;
+    if (mouseEvent) {
+        QRect firstRowRect(option.rect);
+        firstRowRect.setSize(firstRowSizeHint(option, index));
+        if (!firstRowRect.contains(mouseEvent->pos()))
+            return true;
+    }
+    return QSqlRelationalDelegate::editorEvent(event, model, option, index);
 }
