@@ -85,6 +85,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->eventsView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
     ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
     ui->eventsView->setWordWrap(true);
+    ui->eventsView->setShowGrid(false);
 
     conversationsModel = new SqlTreeModel(this);
     ui->conversationsView->setSelectionMode(QAbstractItemView::SingleSelection);

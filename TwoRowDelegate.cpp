@@ -35,8 +35,9 @@ void TwoRowDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option
 
     if (index.column() == 1) {
         QStyleOptionViewItemV4 secondRowOption(option);
-        secondRowOption.rect.moveTop(secondRowHeight(option, index));
-        secondRowOption.rect.setHeight(secondRowHeight(option, index));
+        int height = secondRowHeight(option, index);
+        secondRowOption.rect.translate(0, height);
+        secondRowOption.rect.setHeight(height);
         secondRowOption.rect.setWidth(m_view->width());
         QSqlRelationalDelegate::paint(painter, secondRowOption, secondRowIndex(index));
     }
