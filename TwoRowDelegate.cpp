@@ -17,15 +17,23 @@
 
 #include "TwoRowDelegate.h"
 
+#include <Qt>
+#include <QObject>
 #include <QPainter>
+#include <QModelIndex>
+#include <QSize>
 #include <QStyleOptionViewItemV4>
-#include <QAbstractItemView>
+#include <QTableView>
 #include <QMouseEvent>
+#include <QRect>
 #include <QDebug>
 
 TwoRowDelegate::TwoRowDelegate(int secondRowColumn, QAbstractItemView *view, QObject *parent) :
     QSqlRelationalDelegate(parent), m_column(secondRowColumn), m_view(view)
 {
+    QTableView *tableView = qobject_cast<QTableView*>(view);
+    if (tableView)
+        tableView->hideColumn(m_column);
 }
 
 void TwoRowDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -33,17 +41,18 @@ void TwoRowDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option
     if (index.column() == m_column)
         return;
 
+    QSize firstRowSize(firstRowSizeHint(option, index));
+
     if (index.column() == 1) {
         QStyleOptionViewItemV4 secondRowOption(option);
-        int height = secondRowHeight(option, index);
-        secondRowOption.rect.translate(0, height);
-        secondRowOption.rect.setHeight(height);
+        secondRowOption.rect.translate(0, firstRowSize.height());
+        secondRowOption.rect.setHeight(secondRowHeight(option, index));
         secondRowOption.rect.setWidth(m_view->width());
         QSqlRelationalDelegate::paint(painter, secondRowOption, secondRowIndex(index));
     }
 
     QStyleOptionViewItemV4 firstRowOption(option);
-    firstRowOption.rect.setSize(firstRowSizeHint(option, index));
+    firstRowOption.rect.setSize(firstRowSize);
     QSqlRelationalDelegate::paint(painter, firstRowOption, index);
 }
 
@@ -61,7 +70,9 @@ QSize TwoRowDelegate::firstRowSizeHint(const QStyleOptionViewItem &option, const
 
 int TwoRowDelegate::secondRowHeight(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    return QSqlRelationalDelegate::sizeHint(option, secondRowIndex(index)).height();
+    QStyleOptionViewItemV4 secondRowOption(option);
+    secondRowOption.rect.setHeight(m_view->height());
+    return secondRowOption.fontMetrics.boundingRect(secondRowOption.rect, Qt::TextWordWrap, index.data().toString()).height();
 }
 
 QModelIndex TwoRowDelegate::secondRowIndex(const QModelIndex &index) const

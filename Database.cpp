@@ -117,11 +117,11 @@ bool Database::create()
     sqlQuery.exec("insert into conversations(id, type, writer_id, name) values (2, 2, 2, 'Conversation2')");
     sqlQuery.exec("insert into conversations_events(id, conversation_id, event_id, sort) values (1, 1, 1, 1)");
     sqlQuery.exec("insert into conversations_events(id, conversation_id, event_id, sort) values (2, 2, 2, 2)");
-    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (1, 1, 1, 1, 1, 'Event')");
-    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (2, 1, 2, 2, 2, 'Event2')");
-    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (3, 1, 1, 3, 1, 'Event3')");
-    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (4, 1, 2, 4, 1, 'Event4')");
-    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (5, 1, 1, 5, 1, 'Event5')");
+    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (1, 1, 1, 1, 1, 'There once was a man named Bob1')");
+    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (2, 1, 2, 2, 2, 'There once was a man named Bob2')");
+    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (3, 1, 1, 3, 1, 'There once was a man named Bob3')");
+    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (4, 1, 2, 4, 1, 'There once was a man named Bob4')");
+    sqlQuery.exec("insert into events(id, type, conversation_id, character_id, audiofile_id, text) values (5, 1, 1, 5, 1, 'There once was a man named Bob5')");
     sqlQuery.exec("insert into audiofiles(id, url) values (1, 'AudioFile.mp4')");
     sqlQuery.exec("insert into audiofiles(id, url) values (2, 'AudioFile2.mp4')");
     sqlQuery.exec("insert into conversation_types(id, name) values (1, 'ConversationType')");

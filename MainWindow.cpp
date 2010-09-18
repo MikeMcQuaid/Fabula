@@ -78,14 +78,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
     eventsModel->select();
 
-    TwoRowDelegate *eventsDelegate = new TwoRowDelegate(5, ui->eventsView);
-    ui->eventsView->setItemDelegate(eventsDelegate);
     ui->eventsView->setModel(eventsModel);
     ui->eventsView->hideColumn(0);
     ui->eventsView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
     ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
     ui->eventsView->setWordWrap(true);
     ui->eventsView->setShowGrid(false);
+    ui->eventsView->setAlternatingRowColors(false);
+
+    TwoRowDelegate *eventsDelegate = new TwoRowDelegate(5, ui->eventsView);
+    ui->eventsView->setItemDelegate(eventsDelegate);
 
     conversationsModel = new SqlTreeModel(this);
     ui->conversationsView->setSelectionMode(QAbstractItemView::SingleSelection);
