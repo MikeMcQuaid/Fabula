@@ -21,6 +21,8 @@
 #include "Database.h"
 #include "TableTreeModel.h"
 #include "TwoRowDelegate.h"
+#include "PreferencesDialog.h"
+#include "EventDialog.h"
 
 #include <QFileDialog>
 #include <QSqlRelationalTableModel>
@@ -38,20 +40,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->statusBar->hide();
-
-    ui->splitter->setStretchFactor(1, 3);
-
-    connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(newFile()));
-    connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
-    connect(ui->actionAdd_Event, SIGNAL(triggered()), this, SLOT(addEvent()));
-    connect(ui->actionDelete_Event, SIGNAL(triggered()), this, SLOT(deleteEvent()));
-    connect(ui->actionAdd_Conversation, SIGNAL(triggered()), this, SLOT(addToConversationTree()));
-    connect(ui->actionDelete_Conversation, SIGNAL(triggered()), this, SLOT(removeFromConversationTree()));
-
-    connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(filterOnConversation(QModelIndex)));
-
     QString fileName = settings.value("database").toString();
 
     if (fileName.isEmpty()) {
@@ -60,6 +48,26 @@ MainWindow::MainWindow(QWidget *parent) :
     else {
         openFile(fileName);
     }
+
+    ui->statusBar->hide();
+
+    ui->splitter->setStretchFactor(1, 3);
+
+    PreferencesDialog *preferences = new PreferencesDialog(this);
+    EventDialog *eventDialog = new EventDialog(this);
+    eventDialog->setModal(false);
+    eventDialog->show();
+
+    connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(newFile()));
+    connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
+    connect(ui->actionAdd_Event, SIGNAL(triggered()), this, SLOT(addEvent()));
+    connect(ui->actionDelete_Event, SIGNAL(triggered()), this, SLOT(deleteEvent()));
+    connect(ui->actionAdd_Conversation, SIGNAL(triggered()), this, SLOT(addToConversationTree()));
+    connect(ui->actionDelete_Conversation, SIGNAL(triggered()), this, SLOT(removeFromConversationTree()));
+    connect(ui->actionPreferences, SIGNAL(triggered()), preferences, SLOT(open()));
+
+    connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
+            this, SLOT(filterOnConversation(QModelIndex)));
 
     eventsModel = new QSqlRelationalTableModel();
     eventsModel->setTable("events");
@@ -80,8 +88,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->eventsView->setModel(eventsModel);
     ui->eventsView->hideColumn(0);
-    ui->eventsView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-    ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    ui->eventsView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::Stretch);
     ui->eventsView->setWordWrap(true);
     ui->eventsView->setShowGrid(false);
     ui->eventsView->setAlternatingRowColors(false);
