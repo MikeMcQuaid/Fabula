@@ -88,18 +88,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->eventsView->setModel(eventsModel);
     ui->eventsView->hideColumn(0);
-    ui->eventsView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
-    ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::Stretch);
+    ui->eventsView->horizontalHeader()->setStretchLastSection(true);
+    ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
     ui->eventsView->setWordWrap(true);
-    ui->eventsView->setShowGrid(false);
-    ui->eventsView->setAlternatingRowColors(false);
+    ui->eventsView->setShowGrid(true);
+    ui->eventsView->setAlternatingRowColors(true);
 
-    TwoRowDelegate *eventsDelegate = new TwoRowDelegate(5, ui->eventsView);
+    QSqlRelationalDelegate *eventsDelegate = new QSqlRelationalDelegate(this);
     ui->eventsView->setItemDelegate(eventsDelegate);
 
     conversationsModel = new SqlTreeModel(this);
     ui->conversationsView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->conversationsView->setUniformRowHeights(true);
+    ui->conversationsView->header()->setStretchLastSection(false);
+    ui->conversationsView->header()->setResizeMode(QHeaderView::ResizeToContents);
     ui->conversationsView->setModel(conversationsModel);
 
     connect(conversationsModel, SIGNAL(submitted()), this, SLOT(reloadEvents()));
