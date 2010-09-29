@@ -9,13 +9,11 @@ SOURCES += main.cpp \
     MainWindow.cpp \
     Database.cpp \
     TableTreeModel.cpp \
-    TwoRowDelegate.cpp \
     PreferencesDialog.cpp \
     EventDialog.cpp
 HEADERS += MainWindow.h \
     Database.h \
     TableTreeModel.h \
-    TwoRowDelegate.h \
     PreferencesDialog.h \
     EventDialog.h
 FORMS += MainWindow.ui \
