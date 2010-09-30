@@ -20,7 +20,6 @@
 
 #include "Database.h"
 #include "TableTreeModel.h"
-#include "TwoRowDelegate.h"
 #include "PreferencesDialog.h"
 #include "EventDialog.h"
 
@@ -30,6 +29,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QSortFilterProxyModel>
+#include <QSqlRelationalDelegate>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
