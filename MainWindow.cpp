@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->statusBar->hide();
 
-    ui->splitter->setStretchFactor(1, 3);
+    ui->splitter->setStretchFactor(1, 1);
 
     PreferencesDialog *preferences = new PreferencesDialog(this);
     EventDialog *eventDialog = new EventDialog(this);
@@ -88,20 +88,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->eventsView->setModel(eventsModel);
     ui->eventsView->hideColumn(0);
-    ui->eventsView->horizontalHeader()->setStretchLastSection(true);
     ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-    ui->eventsView->setWordWrap(true);
-    ui->eventsView->setShowGrid(true);
-    ui->eventsView->setAlternatingRowColors(true);
 
     QSqlRelationalDelegate *eventsDelegate = new QSqlRelationalDelegate(this);
     ui->eventsView->setItemDelegate(eventsDelegate);
 
     conversationsModel = new SqlTreeModel(this);
-    ui->conversationsView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->conversationsView->setUniformRowHeights(true);
-    ui->conversationsView->header()->setStretchLastSection(false);
-    ui->conversationsView->header()->setResizeMode(QHeaderView::ResizeToContents);
     ui->conversationsView->setModel(conversationsModel);
 
     connect(conversationsModel, SIGNAL(submitted()), this, SLOT(reloadEvents()));

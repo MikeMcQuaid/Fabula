@@ -68,10 +68,13 @@
       </property>
       <widget class="QTreeView" name="conversationsView">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="uniformRowHeights">
+        <bool>true</bool>
        </property>
        <property name="sortingEnabled">
         <bool>true</bool>
@@ -88,10 +91,13 @@
        <property name="expandsOnDoubleClick">
         <bool>true</bool>
        </property>
+       <attribute name="headerStretchLastSection">
+        <bool>true</bool>
+       </attribute>
       </widget>
       <widget class="QTableView" name="eventsView">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -117,8 +123,8 @@
        <property name="cornerButtonEnabled">
         <bool>false</bool>
        </property>
-       <attribute name="verticalHeaderVisible">
-        <bool>false</bool>
+       <attribute name="horizontalHeaderStretchLastSection">
+        <bool>true</bool>
        </attribute>
        <attribute name="verticalHeaderVisible">
         <bool>false</bool>
