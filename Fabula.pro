@@ -10,12 +10,14 @@ SOURCES += main.cpp \
     Database.cpp \
     TableTreeModel.cpp \
     PreferencesDialog.cpp \
-    EventDialog.cpp
+    EventDialog.cpp \
+    EventDelegate.cpp
 HEADERS += MainWindow.h \
     Database.h \
     TableTreeModel.h \
     PreferencesDialog.h \
-    EventDialog.h
+    EventDialog.h \
+    EventDelegate.h
 FORMS += MainWindow.ui \
     PreferencesDialog.ui \
     EventDialog.ui

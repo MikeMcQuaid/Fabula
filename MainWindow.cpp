@@ -22,6 +22,7 @@
 #include "TableTreeModel.h"
 #include "PreferencesDialog.h"
 #include "EventDialog.h"
+#include "EventDelegate.h"
 
 #include <QFileDialog>
 #include <QSqlRelationalTableModel>
@@ -29,7 +30,6 @@
 #include <QFile>
 #include <QDebug>
 #include <QSortFilterProxyModel>
-#include <QSqlRelationalDelegate>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -54,9 +54,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->splitter->setStretchFactor(1, 1);
 
     PreferencesDialog *preferences = new PreferencesDialog(this);
-    EventDialog *eventDialog = new EventDialog(this);
-    eventDialog->setModal(false);
-    eventDialog->show();
 
     connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(newFile()));
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
@@ -90,8 +87,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->eventsView->hideColumn(0);
     ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
-    QSqlRelationalDelegate *eventsDelegate = new QSqlRelationalDelegate(this);
-    ui->eventsView->setItemDelegate(eventsDelegate);
+    EventDelegate *eventDelegate = new EventDelegate(this);
+    ui->eventsView->setItemDelegate(eventDelegate);
 
     conversationsModel = new SqlTreeModel(this);
     ui->conversationsView->setModel(conversationsModel);

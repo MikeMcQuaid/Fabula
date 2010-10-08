@@ -22,25 +22,48 @@
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <layout class="QFormLayout" name="formLayout">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+        </property>
         <item row="0" column="0">
-         <widget class="QLabel" name="eventLabelLabel">
+         <widget class="QLabel" name="typeLabel">
           <property name="text">
-           <string>Event Label:</string>
+           <string>Type:</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="eventLabelLineEdit"/>
+         <widget class="QComboBox" name="typeComboBox"/>
         </item>
         <item row="1" column="0">
-         <widget class="QLabel" name="eventTypeLabel">
+         <widget class="QLabel" name="conversationLabel">
           <property name="text">
-           <string>Event Type:</string>
+           <string>Conversation</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QComboBox" name="eventTypeComboBox"/>
+         <widget class="QComboBox" name="conversationComboBox"/>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="characterLabel">
+          <property name="text">
+           <string>Character</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QComboBox" name="characterComboBox"/>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="audioFileLabel">
+          <property name="text">
+           <string>Audio File</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QComboBox" name="audioFileComboBox"/>
         </item>
        </layout>
       </item>
@@ -52,6 +75,11 @@
      <property name="title">
       <string>Type</string>
      </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QTextEdit" name="textEdit"/>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
