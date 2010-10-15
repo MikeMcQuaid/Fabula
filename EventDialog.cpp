@@ -1,6 +1,8 @@
 #include "EventDialog.h"
 #include "ui_EventDialog.h"
 
+#include <QDebug>
+#include <QTableView>
 #include <QSqlRelationalTableModel>
 
 EventDialog::EventDialog(QWidget *parent) :
@@ -36,12 +38,27 @@ void EventDialog::setRow(int row) {
 
 void EventDialog::setModel(QSqlRelationalTableModel *model) {
     m_model = model;
-    ui->typeComboBox->setModel(m_model);
-    ui->conversationComboBox->setModel(m_model);
-    ui->characterComboBox->setModel(m_model);
-    ui->audioFileComboBox->setModel(m_model);
+
+    // TODO Get the columns from the Database class
+    int column = 1;
+    setComboBoxModel(ui->typeComboBox, column++);
+    setComboBoxModel(ui->conversationComboBox, column++);
+    setComboBoxModel(ui->characterComboBox, column++);
+    setComboBoxModel(ui->audioFileComboBox, column++, "url");
+    ui->textEdit->setText(m_model->data(m_model->index(m_row, column++)).toString());
 }
 
 void EventDialog::writeToModel() {
-    //TODO
+    qDebug() << ui->typeComboBox->currentText();
+    qDebug() << ui->conversationComboBox->currentText();
+    qDebug() << ui->characterComboBox->currentText();
+    qDebug() << ui->audioFileComboBox->currentText();
+    qDebug() << ui->textEdit->toPlainText();
+    qDebug() << ui->conversationComboBox->model()->submit();
+}
+
+void EventDialog::setComboBoxModel(QComboBox *comboBox, int modelColumn, const QString& relationalColumnName) {
+    QSqlTableModel *relationModel = m_model->relationModel(modelColumn);
+    comboBox->setModel(relationModel);
+    comboBox->setModelColumn(relationModel->fieldIndex(relationalColumnName));
 }

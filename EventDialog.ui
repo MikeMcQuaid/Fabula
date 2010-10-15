@@ -33,7 +33,11 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QComboBox" name="typeComboBox"/>
+         <widget class="QComboBox" name="typeComboBox">
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="conversationLabel">
@@ -43,7 +47,11 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QComboBox" name="conversationComboBox"/>
+         <widget class="QComboBox" name="conversationComboBox">
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="characterLabel">
@@ -53,7 +61,11 @@
          </widget>
         </item>
         <item row="2" column="1">
-         <widget class="QComboBox" name="characterComboBox"/>
+         <widget class="QComboBox" name="characterComboBox">
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item row="3" column="0">
          <widget class="QLabel" name="audioFileLabel">
@@ -63,7 +75,11 @@
          </widget>
         </item>
         <item row="3" column="1">
-         <widget class="QComboBox" name="audioFileComboBox"/>
+         <widget class="QComboBox" name="audioFileComboBox">
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>

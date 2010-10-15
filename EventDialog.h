@@ -9,6 +9,7 @@ namespace Ui {
 }
 
 class QSqlRelationalTableModel;
+class QComboBox;
 
 class EventDialog : public QDialog
 {
@@ -23,6 +24,7 @@ public:
 private slots:
     void changedEventType(const QString &eventType);
 private:
+    void setComboBoxModel(QComboBox *comboBox, int modelColumn, const QString &relationalColumnName = QString("name"));
     Ui::EventDialog *ui;
     QSqlRelationalTableModel *m_model;
     int m_row;
