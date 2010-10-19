@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QModelIndex>
+#include <QMap>
 
 namespace Ui {
     class EventDialog;
@@ -18,15 +19,17 @@ class EventDialog : public QDialog
 public:
     explicit EventDialog(QWidget *parent = 0);
     ~EventDialog();
-    void setModel(QSqlRelationalTableModel *model);
-    void setRow(int row);
+    void setModelRow(QSqlRelationalTableModel *model, int row);
     void writeToModel();
 private slots:
     void changedEventType(const QString &eventType);
 private:
-    void setComboBoxModel(QComboBox *comboBox, int modelColumn, const QString &relationalColumnName = QString("name"));
+    void setupComboBoxModel(QComboBox *comboBox);
+    void writeComboBoxModel(QComboBox *comboBox);
     Ui::EventDialog *ui;
     QSqlRelationalTableModel *m_model;
+    QMap<int, QComboBox*> m_columnToComboBoxMap;
+    QMap<int, QString> m_columnToRelationNameMap;
     int m_row;
 };
 

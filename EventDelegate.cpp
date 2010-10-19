@@ -3,6 +3,7 @@
 #include "EventDialog.cpp"
 
 #include <QItemEditorFactory>
+#include <QDebug>
 
 EventDelegate::EventDelegate(QObject *parent) :
     QItemDelegate(parent)
@@ -26,8 +27,7 @@ void EventDelegate::setEditorData(QWidget *editor, const QModelIndex &index) con
     if (!model)
         return;
 
-    dialog->setModel(m_model);
-    dialog->setRow(index.row());
+    dialog->setModelRow(m_model, index.row());
 }
 
 void EventDelegate::setModelData(QWidget *editor, QAbstractItemModel*, const QModelIndex &) const {

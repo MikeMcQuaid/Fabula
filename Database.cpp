@@ -75,7 +75,7 @@ bool Database::create()
 
     databaseStructure.insert("events",
                              "id int primary key, "
-                             "type int not null, "
+                             "event_type_id int not null, "
                              "conversation_id int not null, "
                              "character_id int, "
                              "audiofile_id int, "
