@@ -110,7 +110,7 @@ bool Database::create()
     sqlQuery.exec("insert into characters(id, name) values (2, 'Character2')");
     sqlQuery.exec("insert into characters(id, name) values (3, 'Character3')");
     sqlQuery.exec("insert into characters(id, name) values (4, 'Character4')");
-    sqlQuery.exec("insert into characters(id, name) values (4, 'Character5')");
+    sqlQuery.exec("insert into characters(id, name) values (5, 'Character5')");
     sqlQuery.exec("insert into writers(id, name) values (1, 'Writer')");
     sqlQuery.exec("insert into writers(id, name) values (2, 'Writer2')");
     sqlQuery.exec("insert into conversations(id, type, writer_id, name) values (1, 1, 1, 'Conversation')");
