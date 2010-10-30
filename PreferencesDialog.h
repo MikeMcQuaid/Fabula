@@ -15,6 +15,11 @@ public:
     explicit PreferencesDialog(QWidget *parent = 0);
     ~PreferencesDialog();
 
+public slots:
+    void open();
+    void load();
+    void save();
+
 private:
     Ui::PreferencesDialog *ui;
 };
