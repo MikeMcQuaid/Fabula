@@ -80,7 +80,15 @@ void EventDialog::setupComboBox(QComboBox *comboBox) {
         return;
 
     const int comboBoxColumn = m_columnToComboBoxMap.key(comboBox);
-    const QModelIndex index = m_model->index(m_row, comboBoxColumn);
+    QModelIndex index = m_model->index(m_row, comboBoxColumn);
+    if (!index.isValid()) {
+        // If this index is invalid, we're probably creating new
+        // data so try the previous row
+        index = m_model->index(m_row-1, comboBoxColumn);
+        Q_ASSERT(index.isValid());
+        if (!index.isValid())
+            return;
+    }
     QWidget *delegateWidget = m_delegate->createEditor(this, QStyleOptionViewItem(), index);
     QComboBox *delegateComboBox = qobject_cast<QComboBox*>(delegateWidget);
     Q_ASSERT(delegateComboBox);
@@ -103,7 +111,9 @@ void EventDialog::setupComboBox(QComboBox *comboBox) {
 }
 
 void EventDialog::setupTextEdit(QTextEdit *textEdit) {
-    const QModelIndex index = m_model->index(m_row, TextColumn);
+    QModelIndex index = m_model->index(m_row, TextColumn);
+    if (!index.isValid())
+        return;
     QWidget *delegateWidget = m_delegate->createEditor(this, QStyleOptionViewItem(), index);
     QLineEdit *delegateLineEdit = qobject_cast<QLineEdit*>(delegateWidget);
     Q_ASSERT(delegateLineEdit);
