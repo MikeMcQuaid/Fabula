@@ -154,7 +154,7 @@ void SqlTreeModel::loadData()
         conversationsIds.insert(conversationName, conversationId);
     }
 
-    foreach(const QString& characterName, charactersConversations.keys()) {
+    foreach(const QString& characterName, charactersConversations.uniqueKeys()) {
         const qint64 characterId = charactersIds.value(characterName);
         SqlTreeItem* character = new SqlTreeItem(characterName, "characters", m_rootItem, characterId, characterIcon);
         m_rootItem->appendChild(character);
