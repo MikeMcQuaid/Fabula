@@ -1,8 +1,9 @@
+*.fabula
+*.user
+CMakeCache.txt
+CMakeFiles/
 Fabula.app/
 Makefile
-*.DS_Store
-*.o
-*.user
-ui_*
-moc_*
-qrc_*
+cmake_install.cmake
+moc_*.cxx
+qrc_*.cxx
