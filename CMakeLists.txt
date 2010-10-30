@@ -24,7 +24,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	)
 endif()
 
-add_definitions( -PROJECT_VERSION=\"${PROJECT_VERSION}\")
+add_definitions( -DPROJECT_VERSION=\"${PROJECT_VERSION}\")
 
 set(SOURCES
 	main.cpp

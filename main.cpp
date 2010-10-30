@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
     QApplication application(argc, argv);
     application.setApplicationName(QString::fromAscii("Fabula"));
-    application.setApplicationVersion(QString::fromAscii("0.1"));
+    application.setApplicationVersion(QString::fromAscii(PROJECT_VERSION));
     application.setOrganizationDomain(QString::fromAscii("mikemcquaid.com"));
     application.setOrganizationName(QString::fromAscii("Mike McQuaid"));
 
