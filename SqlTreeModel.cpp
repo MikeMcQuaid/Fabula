@@ -15,7 +15,7 @@
     along with Fabula. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "TableTreeModel.h"
+#include "SqlTreeModel.h"
 
 #include <QStringList>
 #include <QDebug>

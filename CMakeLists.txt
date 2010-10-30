@@ -30,7 +30,7 @@ set(SOURCES
 	main.cpp
 	MainWindow.cpp
 	Database.cpp
-	TableTreeModel.cpp
+	SqlTreeModel.cpp
 	PreferencesDialog.cpp
 	EventDialog.cpp
 	EventDelegate.cpp
@@ -40,7 +40,7 @@ qt4_automoc(${SOURCES})
 set(HEADERS
 	MainWindow.h
 	Database.h
-	TableTreeModel.h
+	SqlTreeModel.h
 	PreferencesDialog.h
 	EventDialog.h
 	EventDelegate.h

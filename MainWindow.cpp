@@ -19,7 +19,7 @@
 #include "ui_MainWindow.h"
 
 #include "Database.h"
-#include "TableTreeModel.h"
+#include "SqlTreeModel.h"
 #include "PreferencesDialog.h"
 #include "EventDialog.h"
 #include "EventDelegate.h"
