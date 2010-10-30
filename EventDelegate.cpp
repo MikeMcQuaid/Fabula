@@ -1,9 +1,10 @@
 #include "EventDelegate.h"
 
-#include "EventDialog.cpp"
+#include "EventDialog.h"
 
 #include <QItemEditorFactory>
 #include <QDebug>
+#include <QSqlRelationalTableModel>
 
 EventDelegate::EventDelegate(QObject *parent) :
     QItemDelegate(parent)
@@ -38,6 +39,7 @@ void EventDelegate::setModelData(QWidget *editor, QAbstractItemModel*, const QMo
 }
 
 void EventDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem&, const QModelIndex&) const {
+    Q_UNUSED(editor);
     Q_ASSERT(qobject_cast<EventDialog*>(editor));
     // Don't do anything, we're modal and sharing the same widget.
 }
