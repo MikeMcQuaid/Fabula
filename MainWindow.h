@@ -46,6 +46,7 @@ public slots:
     void deleteEvent();
     void addToConversationTree();
     void removeFromConversationTree();
+    void reloadConversations();
     void reloadEvents();
 
 protected:

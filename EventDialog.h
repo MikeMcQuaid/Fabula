@@ -2,15 +2,16 @@
 #define EVENTDIALOG_H
 
 #include <QDialog>
-#include <QModelIndex>
 #include <QMap>
 
 namespace Ui {
     class EventDialog;
 }
 
-class QSqlRelationalTableModel;
 class QComboBox;
+class QSqlRelationalDelegate;
+class QSqlRelationalTableModel;
+class QTextEdit;
 
 class EventDialog : public QDialog
 {
@@ -21,16 +22,22 @@ public:
     ~EventDialog();
     void setModelRow(QSqlRelationalTableModel *model, int row);
     void writeToModel();
+public slots:
+    virtual void accept();
 private slots:
     void changedEventType(const QString &eventType);
+    void checkWriteReady();
 private:
-    void setupComboBoxModel(QComboBox *comboBox);
-    void writeComboBoxModel(QComboBox *comboBox);
+    void setupComboBox(QComboBox *comboBox);
+    void writeComboBox(QComboBox *comboBox);
+    void setupTextEdit(QTextEdit *textEdit);
+    void writeTextEdit(QTextEdit *textEdit);
     Ui::EventDialog *ui;
     QSqlRelationalTableModel *m_model;
     QMap<int, QComboBox*> m_columnToComboBoxMap;
-    QMap<int, QString> m_columnToRelationNameMap;
     int m_row;
+    int m_result;
+    QSqlRelationalDelegate *m_delegate;
 };
 
 #endif // EVENTDIALOG_H

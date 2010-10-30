@@ -2,9 +2,11 @@
 #include "ui_EventDialog.h"
 
 #include <QDebug>
-#include <QTableView>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSqlRelationalDelegate>
 #include <QSqlRelationalTableModel>
-#include <QSqlError>
+#include <QTableView>
 
 // TODO Get the columns from the Database class
 enum EventColumn {
@@ -17,8 +19,7 @@ enum EventColumn {
 };
 
 EventDialog::EventDialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::EventDialog)
+    QDialog(parent), ui(new Ui::EventDialog), m_row(0), m_result(0), m_delegate(new QSqlRelationalDelegate(this))
 {
     ui->setupUi(this);
 
@@ -27,18 +28,28 @@ EventDialog::EventDialog(QWidget *parent) :
     m_columnToComboBoxMap.insert(CharacterColumn, ui->characterComboBox);
     m_columnToComboBoxMap.insert(AudioFileColumn, ui->audioFileComboBox);
 
-    m_columnToRelationNameMap.insert(TypeColumn, "name");
-    m_columnToRelationNameMap.insert(ConversationColumn, "name");
-    m_columnToRelationNameMap.insert(CharacterColumn, "name");
-    m_columnToRelationNameMap.insert(AudioFileColumn, "url");
-
     connect(ui->typeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(changedEventType(QString)));
+
+    foreach(QComboBox *comboBox, m_columnToComboBoxMap) {
+        connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(checkWriteReady()));
+        connect(comboBox, SIGNAL(editTextChanged(QString)), this, SLOT(checkWriteReady()));
+    }
+    connect(ui->textEdit, SIGNAL(textChanged()), this, SLOT(checkWriteReady()));
+
+    checkWriteReady();
 }
 
 void EventDialog::changedEventType(const QString &eventType)
 {
-    // TODO Change the event entry box depending event type
+    // TODO Maybe change the event entry box depending event type?
     ui->eventTypeGroupBox->setTitle(eventType);
+}
+
+void EventDialog::accept()
+{
+    // Manually set the result first so it's propogated to the delegate before closing
+    setResult(QDialog::Accepted);
+    done(QDialog::Accepted);
 }
 
 EventDialog::~EventDialog()
@@ -51,62 +62,110 @@ void EventDialog::setModelRow(QSqlRelationalTableModel *model, int row) {
     m_model = model;
 
     foreach(QComboBox *comboBox, m_columnToComboBoxMap)
-        setupComboBoxModel(comboBox);
+        setupComboBox(comboBox);
 
-    ui->textEdit->setText(m_model->data(m_model->index(m_row, TextColumn)).toString());
+    setupTextEdit(ui->textEdit);
 }
 
 void EventDialog::writeToModel() {
     foreach(QComboBox *comboBox, m_columnToComboBoxMap)
-        writeComboBoxModel(comboBox);
+        writeComboBox(comboBox);
 
-    const QModelIndex textIndex = m_model->index(m_row, TextColumn);
-    const bool wroteData = m_model->setData(textIndex, ui->textEdit->toPlainText());
-    Q_ASSERT(wroteData);
-    m_model->select();
+    writeTextEdit(ui->textEdit);
 }
 
-void EventDialog::setupComboBoxModel(QComboBox *comboBox) {
+void EventDialog::setupComboBox(QComboBox *comboBox) {
     Q_ASSERT(comboBox);
     if (!comboBox)
         return;
 
     const int comboBoxColumn = m_columnToComboBoxMap.key(comboBox);
-    QSqlTableModel *relationModel = m_model->relationModel(comboBoxColumn);
-    Q_ASSERT(relationModel);
-    if (!relationModel)
+    const QModelIndex index = m_model->index(m_row, comboBoxColumn);
+    QWidget *delegateWidget = m_delegate->createEditor(this, QStyleOptionViewItem(), index);
+    QComboBox *delegateComboBox = qobject_cast<QComboBox*>(delegateWidget);
+    Q_ASSERT(delegateComboBox);
+    if (!delegateComboBox)
+        return;
+    m_delegate->setEditorData(delegateComboBox, index);
+
+    QAbstractItemModel *abstractModel = delegateComboBox->model();
+    QSqlTableModel *model = qobject_cast<QSqlTableModel*>(abstractModel);
+    Q_ASSERT(model);
+    if (!model)
         return;
 
-    relationModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
-    comboBox->setModel(relationModel);
-    const QString &relationName = m_columnToRelationNameMap.value(comboBoxColumn);
-    comboBox->setModelColumn(relationModel->fieldIndex(relationName));
-    const QModelIndex modelIndex = m_model->index(m_row, comboBoxColumn);
-    const QString &currentValue = m_model->data(modelIndex).toString();
-    const int currentIndex = comboBox->findText(currentValue);
-    comboBox->setCurrentIndex(currentIndex);
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    comboBox->setModel(model);
+    comboBox->setModelColumn(delegateComboBox->modelColumn());
+    comboBox->setCurrentIndex(delegateComboBox->currentIndex());
+
+    delete delegateComboBox;
 }
 
-void EventDialog::writeComboBoxModel(QComboBox *comboBox) {
+void EventDialog::setupTextEdit(QTextEdit *textEdit) {
+    const QModelIndex index = m_model->index(m_row, TextColumn);
+    QWidget *delegateWidget = m_delegate->createEditor(this, QStyleOptionViewItem(), index);
+    QLineEdit *delegateLineEdit = qobject_cast<QLineEdit*>(delegateWidget);
+    Q_ASSERT(delegateLineEdit);
+    if (!delegateLineEdit)
+        return;
+    m_delegate->setEditorData(delegateLineEdit, index);
+
+    textEdit->setText(delegateLineEdit->text());
+
+    delete delegateLineEdit;
+}
+
+void EventDialog::writeComboBox(QComboBox *comboBox) {
     Q_ASSERT(comboBox);
     if (!comboBox)
         return;
 
-    // Write any new items in the combobox
     QSqlTableModel *relationModel = qobject_cast<QSqlTableModel*>(comboBox->model());
     Q_ASSERT(relationModel);
     if (!relationModel)
         return;
 
-    // Get the column index before it's reset by the submitAll
-    const QModelIndex relationIdIndex = relationModel->index(comboBox->currentIndex(), 0);
-    const int relationId = relationModel->data(relationIdIndex).toInt();
-
+    // Need to get text before writing new items as the combobox
+    // index can be reset afterwards.
+    const QString &comboBoxText = comboBox->currentText();
     relationModel->submitAll();
+    const int comboBoxRow = comboBox->findText(comboBoxText);
+    comboBox->setCurrentIndex(comboBoxRow);
 
-    // Set the combobox value in the main model
+    // A hacky but successful way to clear the model's relation cache.
+    const QSqlTableModel::EditStrategy editStrategy = m_model->editStrategy();
+    Q_ASSERT(editStrategy != QSqlTableModel::OnManualSubmit);
+    m_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    m_model->submitAll();
+    m_model->setEditStrategy(editStrategy);
+
     const int comboBoxColumn = m_columnToComboBoxMap.key(comboBox);
-    const QModelIndex modelIndex = m_model->index(m_row, comboBoxColumn);
-    const bool wroteData = m_model->setData(modelIndex, relationId);
-    Q_ASSERT(wroteData);
+    const QModelIndex index = m_model->index(m_row, comboBoxColumn);
+    m_delegate->setModelData(comboBox, m_model, index);
+}
+
+void EventDialog::writeTextEdit(QTextEdit *textEdit) {
+    QLineEdit *lineEdit = new QLineEdit(textEdit->toPlainText(), this);
+    const QModelIndex index = m_model->index(m_row, TextColumn);
+    m_delegate->setModelData(lineEdit, m_model, index);
+    delete lineEdit;
+}
+
+void EventDialog::checkWriteReady() {
+    bool isReadyToWrite = true;
+
+    foreach(QComboBox *comboBox, m_columnToComboBoxMap)
+        if (comboBox->currentIndex() == -1 || comboBox->currentText().isEmpty()) {
+            isReadyToWrite = false;
+            break;
+        }
+
+    if (isReadyToWrite && ui->textEdit->toPlainText().isEmpty())
+        isReadyToWrite = false;
+
+    QPushButton *ok = ui->buttonBox->button(QDialogButtonBox::Ok);
+    Q_ASSERT(ok);
+    if (ok)
+        ok->setEnabled(isReadyToWrite);
 }

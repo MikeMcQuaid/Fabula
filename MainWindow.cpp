@@ -94,6 +94,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->conversationsView->setModel(conversationsModel);
 
     connect(conversationsModel, SIGNAL(submitted()), this, SLOT(reloadEvents()));
+    connect(eventsModel, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),
+            this, SLOT(reloadConversations()));
 }
 
 void MainWindow::newFile()
@@ -122,9 +124,8 @@ void MainWindow::openFile(QString fileName)
         }
         database = new Database(fileName);
         settings.setValue("database", fileName);
+        reloadConversations();
         reloadEvents();
-        if (conversationsModel)
-            conversationsModel->reset();
         setWindowTitle(QString("%1 - Fabula").arg(fileName));
         ui->centralWidget->setEnabled(true);
     }
@@ -158,12 +159,30 @@ void MainWindow::filterOnConversation(const QModelIndex& index)
 
 void MainWindow::addEvent()
 {
-    eventsModel->insertRow(ui->eventsView->currentIndex().row()+1);
+    int row = ui->eventsView->currentIndex().row() + 1;
+    EventDialog *eventDialog = new EventDialog(this);
+    eventDialog->setWindowModality(Qt::WindowModal);
+    eventDialog->setModelRow(eventsModel, row);
+    int result = eventDialog->exec();
+    if (result == QDialog::Accepted) {
+        bool rowWasInserted = eventsModel->insertRow(row);
+        Q_ASSERT(rowWasInserted);
+        if (!rowWasInserted)
+            return;
+        eventDialog->writeToModel();
+        eventsModel->submit();
+    }
 }
 
 void MainWindow::deleteEvent()
 {
-    eventsModel->removeRow(ui->eventsView->currentIndex().row());
+    qDebug() << "removing row: " << ui->eventsView->currentIndex().row();
+    bool rowWasRemoved = eventsModel->removeRow(ui->eventsView->currentIndex().row());
+    qDebug() << "row removed?" << rowWasRemoved;
+    //Q_ASSERT(rowWasRemoved);
+    if (!rowWasRemoved)
+        return;
+    eventsModel->submit();
 }
 
 void MainWindow::addToConversationTree()
@@ -176,6 +195,13 @@ void MainWindow::removeFromConversationTree()
 {
     conversationsModel->removeRow(ui->conversationsView->currentIndex().row(),
                                       ui->conversationsView->currentIndex().parent());
+}
+
+void MainWindow::reloadConversations()
+{
+    if (conversationsModel)
+        conversationsModel->reset();
+    // TODO Select the correct index after reset
 }
 
 void MainWindow::reloadEvents()

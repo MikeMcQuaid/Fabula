@@ -74,8 +74,10 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     bool insertRow(int row, const QModelIndex &parent = QModelIndex());
-    bool submit();
     void reset();
+
+public slots:
+    bool submit();
 
 signals:
     void submitted();

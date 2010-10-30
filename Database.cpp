@@ -54,44 +54,44 @@ bool Database::create()
     QMap<QString, QString> databaseStructure;
 
     databaseStructure.insert("characters",
-                             "id int primary key, "
-                             "name varchar(20) unique");
+                             "id integer primary key autoincrement, "
+                             "name text unique");
 
     databaseStructure.insert("writers",
-                             "id int primary key, "
-                             "name varchar(20) unique");
+                             "id integer primary key autoincrement, "
+                             "name text unique");
 
     databaseStructure.insert("conversations",
-                             "id int primary key, "
-                             "type int not null, "
-                             "writer_id int not null, "
-                             "name varchar(20) unique");
+                             "id integer primary key autoincrement, "
+                             "type integer not null, "
+                             "writer_id integer not null, "
+                             "name text unique");
 
     databaseStructure.insert("conversations_events",
-                             "id int primary key, "
-                             "conversation_id int not null, "
-                             "event_id int not null, "
-                             "sort int not null");
+                             "id integer primary key autoincrement, "
+                             "conversation_id integer not null, "
+                             "event_id integer not null, "
+                             "sort integer not null");
 
     databaseStructure.insert("events",
-                             "id int primary key, "
-                             "event_type_id int not null, "
-                             "conversation_id int not null, "
-                             "character_id int, "
-                             "audiofile_id int, "
-                             "text varchar(200)");
+                             "id integer primary key autoincrement, "
+                             "event_type_id integer not null, "
+                             "conversation_id integer not null, "
+                             "character_id integer, "
+                             "audiofile_id integer, "
+                             "text text");
 
     databaseStructure.insert("audiofiles",
-                             "id int primary key, "
-                             "url varchar(50)");
+                             "id integer primary key autoincrement, "
+                             "url text");
 
     databaseStructure.insert("conversation_types",
-                             "id int primary key, "
-                             "name varchar(20) unique");
+                             "id integer primary key autoincrement, "
+                             "name text unique");
 
     databaseStructure.insert("event_types",
-                             "id int primary key, "
-                             "name varchar(20) unique");
+                             "id integer primary key autoincrement, "
+                             "name text unique");
 
     QSqlQuery sqlQuery;
     foreach(const QString &tableName, databaseStructure.keys()) {

@@ -177,12 +177,16 @@ QModelIndex SqlTreeModel::index(int row, int column, const QModelIndex &parent)
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    SqlTreeItem *parentItem;
+    SqlTreeItem *parentItem = 0;
 
     if (!parent.isValid())
         parentItem = m_rootItem;
     else
         parentItem = static_cast<SqlTreeItem*>(parent.internalPointer());
+
+    Q_ASSERT(parentItem);
+    if (!parentItem)
+        return QModelIndex();
 
     SqlTreeItem *childItem = parentItem->child(row);
     if (childItem)
@@ -197,7 +201,14 @@ QModelIndex SqlTreeModel::parent(const QModelIndex &index) const
         return QModelIndex();
 
     SqlTreeItem *childItem = static_cast<SqlTreeItem*>(index.internalPointer());
+    Q_ASSERT(childItem);
+    if (!childItem)
+        return QModelIndex();
+
     SqlTreeItem *parentItem = childItem->parent();
+    Q_ASSERT(parentItem);
+    if (!parentItem)
+        return QModelIndex();
 
     if (parentItem == m_rootItem)
         return QModelIndex();
@@ -207,7 +218,7 @@ QModelIndex SqlTreeModel::parent(const QModelIndex &index) const
 
 int SqlTreeModel::rowCount(const QModelIndex &parent) const
 {
-    SqlTreeItem *parentItem;
+    SqlTreeItem *parentItem = 0;
     if (parent.column() > 0)
         return 0;
 
@@ -215,6 +226,10 @@ int SqlTreeModel::rowCount(const QModelIndex &parent) const
         parentItem = m_rootItem;
     else
         parentItem = static_cast<SqlTreeItem*>(parent.internalPointer());
+
+    Q_ASSERT(parentItem);
+    if (!parentItem)
+        return 0;
 
     return parentItem->childCount();
 }
@@ -230,6 +245,9 @@ QVariant SqlTreeModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     SqlTreeItem *item = static_cast<SqlTreeItem*>(index.internalPointer());
+    Q_ASSERT(item);
+    if (!item)
+        return QVariant();
 
     if (role == Qt::DisplayRole)
         return item->data();
@@ -252,13 +270,23 @@ bool SqlTreeModel::setData(const QModelIndex &index, const QVariant &value, int 
         return false;
 
     SqlTreeItem *item = static_cast<SqlTreeItem*>(index.internalPointer());
+    Q_ASSERT(item);
+    if (!item)
+        return false;
+
     const int id = item->id();
 
     if (id != SqlTreeItem::INVALID_ID) {
         foreach (SqlTreeItem* characterItem, m_rootItem->children()) {
+            Q_ASSERT(characterItem);
+            if (!characterItem)
+                return false;
             if (id == characterItem->id())
                 characterItem->setData(value.toString());
             foreach (SqlTreeItem* conversationItem, characterItem->children()) {
+                Q_ASSERT(conversationItem);
+                if (!conversationItem)
+                    return false;
                 if (id == conversationItem->id())
                     conversationItem->setData(value.toString());
             }
@@ -274,6 +302,10 @@ bool SqlTreeModel::setData(const QModelIndex &index, const QVariant &value, int 
 bool SqlTreeModel::insertRow(int, const QModelIndex &parent)
 {
     SqlTreeItem *parentItem = static_cast<SqlTreeItem*>(parent.internalPointer());
+    Q_ASSERT(parentItem);
+    if (!parentItem)
+        return false;
+
     if (!parentItem)
         parentItem = m_rootItem;
 
@@ -310,10 +342,14 @@ Qt::ItemFlags SqlTreeModel::flags(const QModelIndex &index) const
 QVariant SqlTreeModel::headerData(int, Qt::Orientation orientation,
                                int role) const
 {
-    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-        return m_rootItem->data();
+    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+        return QVariant();
 
-    return QVariant();
+    Q_ASSERT(m_rootItem);
+    if (!m_rootItem)
+        return QVariant();
+
+    return m_rootItem->data();
 }
 
 bool SqlTreeModel::submit()
@@ -324,6 +360,10 @@ bool SqlTreeModel::submit()
     QList<SqlTreeItem*> updatedConversations;
 
     foreach (SqlTreeItem* characterItem, m_rootItem->children()) {
+        Q_ASSERT(characterItem);
+        if (!characterItem)
+            return false;
+
         if (characterItem->data() == "New Item")
             continue;
 
@@ -334,6 +374,10 @@ bool SqlTreeModel::submit()
                 updatedCharacters.append(characterItem);
         }
         foreach (SqlTreeItem* conversationItem, characterItem->children()) {
+            Q_ASSERT(conversationItem);
+            if (!conversationItem)
+                return false;
+
             if (conversationItem->data() == "New Item")
                 continue;
 
@@ -350,6 +394,10 @@ bool SqlTreeModel::submit()
     bool querySuccess = false;
 
     foreach (SqlTreeItem* newCharacter, newCharacters) {
+        Q_ASSERT(newCharacter);
+        if (!newCharacter)
+            return false;
+
         query.prepare("insert into characters(name) values(:name)");
         query.bindValue(":name", newCharacter->data());
         querySuccess = query.exec();
@@ -362,6 +410,10 @@ bool SqlTreeModel::submit()
     }
 
     foreach (SqlTreeItem* newConversation, newConversations) {
+        Q_ASSERT(newConversation);
+        if (!newConversation)
+            return false;
+
         query.prepare("insert into conversations(name) values(:name)");
         query.bindValue(":name", newConversation->data());
         querySuccess = query.exec();
@@ -376,6 +428,10 @@ bool SqlTreeModel::submit()
     // TODO: Check we update at least one row
 
     foreach (SqlTreeItem* updatedCharacter, updatedCharacters) {
+        Q_ASSERT(updatedCharacter);
+        if (!updatedCharacter)
+            return false;
+
         query.prepare("update characters set name=:name where id=:id");
         query.bindValue(":name", updatedCharacter->data());
         query.bindValue(":id", updatedCharacter->id());
@@ -387,6 +443,10 @@ bool SqlTreeModel::submit()
     }
 
     foreach (SqlTreeItem* updatedConversation, updatedConversations) {
+        Q_ASSERT(updatedConversation);
+        if (!updatedConversation)
+            return false;
+
         query.prepare("update conversations set name=:name where id=:id");
         query.bindValue(":name", updatedConversation->data());
         query.bindValue(":id", updatedConversation->id());
@@ -401,4 +461,3 @@ bool SqlTreeModel::submit()
 
     return true;
 }
-

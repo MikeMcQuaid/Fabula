@@ -33,7 +33,7 @@ void EventDelegate::setEditorData(QWidget *editor, const QModelIndex &index) con
 void EventDelegate::setModelData(QWidget *editor, QAbstractItemModel*, const QModelIndex &) const {
     EventDialog *dialog = qobject_cast<EventDialog*>(editor);
     Q_ASSERT(dialog);
-    if (dialog)
+    if (dialog && dialog->result() == QDialog::Accepted)
         dialog->writeToModel();
 }
 
