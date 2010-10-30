@@ -14,13 +14,13 @@ cmake_minimum_required(VERSION 2.8.0)
 find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtSQL REQUIRED)
 include(UseQt4)
 
-if(NOT CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_COMPILER_IS_GNUCXX)
 	add_definitions(
-		-Wall -Werror -Wextra -Wold-style-cast -Wformat=2 -Winit-self 
-		-Wswitch-default -Wundef -Wpointer-arith -Wcast-qual -Wconversion
-		-Wunused -Wmissing-format-attribute -Wredundant-decls -Winline
-		-Wnon-virtual-dtor -Wsign-promo -Woverloaded-virtual
-		-Wstrict-null-sentinel -Wno-pmf-conversions -Wctor-dtor-privacy
+		-Wall -Werror -Wextra -Wold-style-cast -Wformat=2 -Winit-self
+		-Wundef -Wpointer-arith -Wcast-qual -Wconversion -Wunused
+		-Wmissing-format-attribute -Wredundant-decls -Winline
+		-Wnon-virtual-dtor -Woverloaded-virtual -Wstrict-null-sentinel
+		-Wno-pmf-conversions -Wctor-dtor-privacy
 	)
 endif()
 
