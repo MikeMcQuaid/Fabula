@@ -15,12 +15,15 @@ DialogDelegate::DialogDelegate(QObject *parent) :
 }
 
 QWidget* DialogDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const {
-    const QAbstractItemModel *model = index.model();
+    const QSqlRelationalTableModel *model = qobject_cast<const QSqlRelationalTableModel*>(index.model());
+    Q_ASSERT(model);
+    if (!model)
+        return 0;
 
     SqlRelationalTableDialog *dialog = 0;
-    if (qobject_cast<const SqlTreeModel*>(model))
+    if (model->tableName() == "conversations")
         dialog = new ConversationDialog(parent);
-    if (!dialog && qobject_cast<const QSqlRelationalTableModel*>(model))
+    else if (model->tableName() == "events")
         dialog = new EventDialog(parent);
 
     Q_ASSERT(dialog);
@@ -56,9 +59,10 @@ void DialogDelegate::updateEditorGeometry(QWidget*, const QStyleOptionViewItem&,
 }
 
 bool DialogDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) {
-    Q_ASSERT(model);
-    if (model)
-        m_model = model;
+    QSqlRelationalTableModel *sqlModel = qobject_cast<QSqlRelationalTableModel*>(model);
+    Q_ASSERT(sqlModel);
+    if (sqlModel)
+        m_model = sqlModel;
 
     return QItemDelegate::editorEvent(event, model, option, index);
 }

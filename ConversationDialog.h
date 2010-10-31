@@ -14,10 +14,9 @@ class ConversationDialog : public SqlRelationalTableDialog
 public:
     explicit ConversationDialog(QWidget *parent = 0);
     ~ConversationDialog();
-    virtual void writeToModel();
-    virtual void setModelRow(QAbstractItemModel *model, int row);
 
 private:
+    QPushButton* okButton();
     Ui::ConversationDialog *ui;
 };
 

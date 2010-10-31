@@ -19,7 +19,7 @@ protected:
     virtual bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index);
 
 private:
-    QAbstractItemModel *m_model;
+    QSqlRelationalTableModel *m_model;
 };
 
 #endif // EVENTDELEGATE_H

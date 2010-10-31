@@ -29,6 +29,7 @@ namespace Ui {
 }
 
 class Database;
+class QAbstractItemView;
 class QSqlRelationalTableModel;
 class SqlTreeModel;
 
@@ -44,8 +45,10 @@ public slots:
     void filterOnConversation(const QModelIndex& index);
     void addEvent();
     void deleteEvent();
-    void addToConversationTree();
-    void removeFromConversationTree();
+    void addConversation();
+    void deleteConversation();
+    void addToView(QAbstractItemView *view);
+    void deleteFromView(QAbstractItemView *view);
     void reloadConversations();
     void reloadEvents();
 
@@ -58,7 +61,9 @@ private:
     QSqlRelationalTableModel *eventsModel;
     QSettings settings;
     QDesktopServices desktopServices;
-    SqlTreeModel *conversationsModel;
+    SqlTreeModel *conversationsTreeModel;
+    QSqlRelationalTableModel *conversationsTableModel;
+
 };
 
 #endif // MAINWINDOW_H

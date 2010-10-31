@@ -63,7 +63,7 @@ bool Database::create()
 
     databaseStructure.insert("conversations",
                              "id integer primary key autoincrement, "
-                             "type integer not null, "
+                             "conversation_type_id integer not null, "
                              "writer_id integer not null, "
                              "name text unique");
 
@@ -113,8 +113,8 @@ bool Database::create()
     sqlQuery.exec("insert into characters(id, name) values (5, 'Character5')");
     sqlQuery.exec("insert into writers(id, name) values (1, 'Writer')");
     sqlQuery.exec("insert into writers(id, name) values (2, 'Writer2')");
-    sqlQuery.exec("insert into conversations(id, type, writer_id, name) values (1, 1, 1, 'Conversation')");
-    sqlQuery.exec("insert into conversations(id, type, writer_id, name) values (2, 2, 2, 'Conversation2')");
+    sqlQuery.exec("insert into conversations(id, conversation_type_id, writer_id, name) values (1, 1, 1, 'Conversation')");
+    sqlQuery.exec("insert into conversations(id, conversation_type_id, writer_id, name) values (2, 2, 2, 'Conversation2')");
     sqlQuery.exec("insert into conversations_events(id, conversation_id, event_id, sort) values (1, 1, 1, 1)");
     sqlQuery.exec("insert into conversations_events(id, conversation_id, event_id, sort) values (2, 2, 2, 2)");
     sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (1, 1, 1, 1, 1, 'There once was a man named Bob1')");

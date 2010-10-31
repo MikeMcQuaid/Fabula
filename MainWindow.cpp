@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     database(0),
     eventsModel(0),
-    conversationsModel(0)
+    conversationsTreeModel(0)
 {
     ui->setupUi(this);
 
@@ -60,8 +60,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
     connect(ui->actionAdd_Event, SIGNAL(triggered()), this, SLOT(addEvent()));
     connect(ui->actionDelete_Event, SIGNAL(triggered()), this, SLOT(deleteEvent()));
-    connect(ui->actionAdd_Conversation, SIGNAL(triggered()), this, SLOT(addToConversationTree()));
-    connect(ui->actionDelete_Conversation, SIGNAL(triggered()), this, SLOT(removeFromConversationTree()));
+    connect(ui->actionAdd_Conversation, SIGNAL(triggered()), this, SLOT(addConversation()));
+    connect(ui->actionDelete_Conversation, SIGNAL(triggered()), this, SLOT(deleteConversation()));
     connect(ui->actionPreferences, SIGNAL(triggered()), preferences, SLOT(open()));
 
     connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
@@ -69,7 +69,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     eventsModel = new QSqlRelationalTableModel();
     eventsModel->setTable("events");
-    eventsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
     eventsModel->setHeaderData(0, Qt::Horizontal, tr("ID"));
     eventsModel->setHeaderData(1, Qt::Horizontal, tr("Type"));
@@ -91,12 +90,20 @@ MainWindow::MainWindow(QWidget *parent) :
     DialogDelegate *eventDelegate = new DialogDelegate(this);
     ui->eventsView->setItemDelegate(eventDelegate);
 
-    conversationsModel = new SqlTreeModel(this);
-    ui->conversationsView->setModel(conversationsModel);
+    conversationsTreeModel = new SqlTreeModel(this);
+    ui->conversationsView->setModel(conversationsTreeModel);
 
-    connect(conversationsModel, SIGNAL(submitted()), this, SLOT(reloadEvents()));
+    connect(conversationsTreeModel, SIGNAL(submitted()), this, SLOT(reloadEvents()));
     connect(eventsModel, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),
             this, SLOT(reloadConversations()));
+
+    conversationsTableModel = new QSqlRelationalTableModel();
+    conversationsTableModel->setTable("conversations");
+
+    conversationsTableModel->setRelation(1, QSqlRelation("conversation_types", "id", "name"));
+    conversationsTableModel->setRelation(2, QSqlRelation("writers", "id", "name"));
+
+    conversationsTableModel->select();
 }
 
 void MainWindow::newFile()
@@ -142,7 +149,7 @@ void MainWindow::filterOnConversation(const QModelIndex& index)
     static const int conversationRow = 2;
     static const int characterRow = 3;
 
-    if (!conversationsModel || !eventsModel)
+    if (!conversationsTreeModel || !eventsModel)
         return;
 
     QString filter;
@@ -151,7 +158,7 @@ void MainWindow::filterOnConversation(const QModelIndex& index)
         row = conversationRow;
     else
         row = characterRow;
-    const QString name = conversationsModel->data(index).toString();
+    const QString name = conversationsTreeModel->data(index).toString();
     // The "relTblAl_" is from the QSqlRelationalTableModel source.
     // This was needed as otherwise it's not obvious how to filter without breaking relations.
     filter = QString("relTblAl_%1.name='%2'").arg(row).arg(name);
@@ -160,48 +167,60 @@ void MainWindow::filterOnConversation(const QModelIndex& index)
 
 void MainWindow::addEvent()
 {
-    int row = ui->eventsView->currentIndex().row() + 1;
-    EventDialog *eventDialog = new EventDialog(this);
-    eventDialog->setWindowModality(Qt::WindowModal);
-    eventDialog->setModelRow(eventsModel, row);
-    int result = eventDialog->exec();
-    if (result == QDialog::Accepted) {
-        bool rowWasInserted = eventsModel->insertRow(row);
-        Q_ASSERT(rowWasInserted);
-        if (!rowWasInserted)
-            return;
-        eventDialog->writeToModel();
-        eventsModel->submit();
-    }
+    addToView(ui->eventsView);
 }
 
 void MainWindow::deleteEvent()
 {
-    qDebug() << "removing row: " << ui->eventsView->currentIndex().row();
-    bool rowWasRemoved = eventsModel->removeRow(ui->eventsView->currentIndex().row());
-    qDebug() << "row removed?" << rowWasRemoved;
-    //Q_ASSERT(rowWasRemoved);
+    deleteFromView(ui->eventsView);
+}
+
+void MainWindow::addConversation()
+{
+    //addToView(ui->conversationsView);
+}
+
+void MainWindow::deleteConversation()
+{
+    //deleteFromView(ui->conversationsView);
+}
+
+void MainWindow::addToView(QAbstractItemView *view)
+{
+    int row = view->currentIndex().row() + 1;
+    EventDialog *eventDialog = new EventDialog(this);
+    eventDialog->setWindowModality(Qt::WindowModal);
+    QSqlRelationalTableModel *sqlModel = qobject_cast<QSqlRelationalTableModel*>(view->model());
+    if (!sqlModel)
+        return;
+    eventDialog->setModelRow(sqlModel, row);
+    int result = eventDialog->exec();
+    if (result == QDialog::Accepted) {
+        bool rowWasInserted = sqlModel->insertRow(row);
+        Q_ASSERT(rowWasInserted);
+        if (!rowWasInserted)
+            return;
+        eventDialog->writeToModel();
+        sqlModel->submit();
+    }
+}
+
+void MainWindow::deleteFromView(QAbstractItemView *view)
+{
+    QSqlRelationalTableModel *sqlModel = qobject_cast<QSqlRelationalTableModel*>(view->model());
+    if (!sqlModel)
+        return;
+    bool rowWasRemoved = sqlModel->removeRow(view->currentIndex().row());
+    Q_ASSERT(rowWasRemoved);
     if (!rowWasRemoved)
         return;
-    eventsModel->submit();
-}
-
-void MainWindow::addToConversationTree()
-{
-    conversationsModel->insertRow(ui->conversationsView->currentIndex().row(),
-                                      ui->conversationsView->currentIndex().parent());
-}
-
-void MainWindow::removeFromConversationTree()
-{
-    conversationsModel->removeRow(ui->conversationsView->currentIndex().row(),
-                                      ui->conversationsView->currentIndex().parent());
+    sqlModel->submit();
 }
 
 void MainWindow::reloadConversations()
 {
-    if (conversationsModel)
-        conversationsModel->reset();
+    if (conversationsTreeModel)
+        conversationsTreeModel->reset();
     // TODO Select the correct index after reset
 }
 
