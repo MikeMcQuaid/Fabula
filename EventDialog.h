@@ -1,26 +1,28 @@
 #ifndef EVENTDIALOG_H
 #define EVENTDIALOG_H
 
-#include <QDialog>
 #include <QMap>
+
+#include "SqlRelationalTableDialog.h"
 
 namespace Ui {
     class EventDialog;
 }
 
+class QAbstractItemModel;
 class QComboBox;
 class QSqlRelationalDelegate;
 class QSqlRelationalTableModel;
 class QTextEdit;
 
-class EventDialog : public QDialog
+class EventDialog : public SqlRelationalTableDialog
 {
     Q_OBJECT
 
 public:
     explicit EventDialog(QWidget *parent = 0);
     ~EventDialog();
-    void setModelRow(QSqlRelationalTableModel *model, int row);
+    void setModelRow(QAbstractItemModel *model, int row);
     void writeToModel();
 public slots:
     virtual void accept();
@@ -32,6 +34,7 @@ private:
     void writeComboBox(QComboBox *comboBox);
     void setupTextEdit(QTextEdit *textEdit);
     void writeTextEdit(QTextEdit *textEdit);
+
     Ui::EventDialog *ui;
     QSqlRelationalTableModel *m_model;
     QMap<int, QComboBox*> m_columnToComboBoxMap;

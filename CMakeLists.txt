@@ -33,7 +33,9 @@ set(SOURCES
 	SqlTreeModel.cpp
 	PreferencesDialog.cpp
 	EventDialog.cpp
-	EventDelegate.cpp
+	ConversationDialog.cpp
+	DialogDelegate.cpp
+	SqlRelationalTableDialog.cpp
 )
 qt4_automoc(${SOURCES})
 
@@ -43,7 +45,9 @@ set(HEADERS
 	SqlTreeModel.h
 	PreferencesDialog.h
 	EventDialog.h
-	EventDelegate.h
+	ConversationDialog.h
+	DialogDelegate.h
+	SqlRelationalTableDialog.h
 )
 qt4_wrap_cpp(MOC_SOURCES ${HEADERS})
 
@@ -51,6 +55,7 @@ set(FORMS
 	MainWindow.ui
 	PreferencesDialog.ui
 	EventDialog.ui
+	ConversationDialog.ui
 )
 qt4_wrap_ui(FORMS_SOURCES ${FORMS})
 

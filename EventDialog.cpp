@@ -19,7 +19,8 @@ enum EventColumn {
 };
 
 EventDialog::EventDialog(QWidget *parent) :
-    QDialog(parent), ui(new Ui::EventDialog), m_row(0), m_result(0), m_delegate(new QSqlRelationalDelegate(this))
+    SqlRelationalTableDialog(parent), ui(new Ui::EventDialog), m_model(0),
+    m_row(0), m_result(0), m_delegate(new QSqlRelationalDelegate(this))
 {
     ui->setupUi(this);
 
@@ -57,9 +58,15 @@ EventDialog::~EventDialog()
     delete ui;
 }
 
-void EventDialog::setModelRow(QSqlRelationalTableModel *model, int row) {
+void EventDialog::setModelRow(QAbstractItemModel *model, int row) {
     m_row = row;
-    m_model = model;
+
+    QSqlRelationalTableModel *tableModel = qobject_cast<QSqlRelationalTableModel*>(model);
+    Q_ASSERT(tableModel);
+    if (!tableModel)
+        return;
+
+    m_model = tableModel;
 
     foreach(QComboBox *comboBox, m_columnToComboBoxMap)
         setupComboBox(comboBox);

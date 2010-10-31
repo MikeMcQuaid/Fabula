@@ -5,11 +5,11 @@
 
 class QSqlRelationalTableModel;
 
-class EventDelegate : public QItemDelegate
+class DialogDelegate : public QItemDelegate
 {
     Q_OBJECT
 public:
-    explicit EventDelegate(QObject *parent = 0);
+    explicit DialogDelegate(QObject *parent = 0);
     virtual QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
     virtual void setEditorData(QWidget *editor, const QModelIndex &index) const;
     virtual void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
@@ -19,7 +19,7 @@ protected:
     virtual bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index);
 
 private:
-    QSqlRelationalTableModel *m_model;
+    QAbstractItemModel *m_model;
 };
 
 #endif // EVENTDELEGATE_H

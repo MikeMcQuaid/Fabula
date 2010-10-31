@@ -21,8 +21,9 @@
 #include "Database.h"
 #include "SqlTreeModel.h"
 #include "PreferencesDialog.h"
+#include "ConversationDialog.h"
 #include "EventDialog.h"
-#include "EventDelegate.h"
+#include "DialogDelegate.h"
 
 #include <QFileDialog>
 #include <QSqlRelationalTableModel>
@@ -87,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->eventsView->hideColumn(0);
     ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
-    EventDelegate *eventDelegate = new EventDelegate(this);
+    DialogDelegate *eventDelegate = new DialogDelegate(this);
     ui->eventsView->setItemDelegate(eventDelegate);
 
     conversationsModel = new SqlTreeModel(this);
