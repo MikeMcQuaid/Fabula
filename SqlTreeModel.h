@@ -60,6 +60,11 @@ class SqlTreeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
+    enum ItemDataUserRole {
+        IdRole = 32,
+        TableRole = 33
+    };
+
     SqlTreeModel(QObject *parent = 0);
     ~SqlTreeModel();
 

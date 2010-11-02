@@ -255,6 +255,12 @@ QVariant SqlTreeModel::data(const QModelIndex &index, int role) const
     if (role == Qt::DecorationRole)
         return item->icon();
 
+    if (role == IdRole)
+        return item->id();
+
+    if (role == TableRole)
+        return item->id();
+
     return QVariant();
 }
 

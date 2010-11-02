@@ -1,6 +1,7 @@
 #include "SqlRelationalTableDialog.h"
 
 #include <QComboBox>
+#include <QDebug>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QSqlRelationalDelegate>
@@ -20,7 +21,7 @@ void SqlRelationalTableDialog::setupWidgets()
     }
 
     foreach(QLineEdit *lineEdit, m_columnLineEdit)
-        connect(lineEdit, SIGNAL(textChanged()), this, SLOT(checkWriteReady()));
+        connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(checkWriteReady()));
 
     foreach(QTextEdit *textEdit, m_columnTextEdit)
         connect(textEdit, SIGNAL(textChanged()), this, SLOT(checkWriteReady()));
@@ -56,8 +57,8 @@ void SqlRelationalTableDialog::writeToWidgets() {
     foreach(QComboBox *comboBox, m_columnComboBox)
         writeToComboBox(comboBox);
 
-    /*foreach(QLineEdit *lineEdit, m_columnLineEdit)
-        writeToLineEdit(lineEdit);*/
+    foreach(QLineEdit *lineEdit, m_columnLineEdit)
+        writeToLineEdit(lineEdit);
 
     foreach(QTextEdit *textEdit, m_columnTextEdit)
         writeToTextEdit(textEdit);
@@ -67,8 +68,8 @@ void SqlRelationalTableDialog::writeFromWidgets() {
     foreach(QComboBox *comboBox, m_columnComboBox)
         writeFromComboBox(comboBox);
 
-    /*foreach(QLineEdit *lineEdit, m_columnLineEdit)
-        writeFromLineEdit(lineEdit);*/
+    foreach(QLineEdit *lineEdit, m_columnLineEdit)
+        writeFromLineEdit(lineEdit);
 
     foreach(QTextEdit *textEdit, m_columnTextEdit)
         writeFromTextEdit(textEdit);
@@ -81,19 +82,17 @@ void SqlRelationalTableDialog::writeToComboBox(QComboBox *comboBox) {
 
     const int comboBoxColumn = m_columnComboBox.key(comboBox);
     QModelIndex index = m_model->index(m_row, comboBoxColumn);
-    if (!index.isValid()) {
-        // If this index is invalid, we're probably creating new
-        // data so try the previous row
-        index = m_model->index(m_row-1, comboBoxColumn);
-        Q_ASSERT(index.isValid());
-        if (!index.isValid())
-            return;
-    }
+    Q_ASSERT(index.isValid());
+    if (!index.isValid())
+        return;
+
     QWidget *delegateWidget = m_delegate->createEditor(this, QStyleOptionViewItem(), index);
     QComboBox *delegateComboBox = qobject_cast<QComboBox*>(delegateWidget);
     Q_ASSERT(delegateComboBox);
-    if (!delegateComboBox)
+    if (!delegateComboBox) {
+        qDebug() << delegateWidget->metaObject()->className();
         return;
+    }
     m_delegate->setEditorData(delegateComboBox, index);
 
     QAbstractItemModel *abstractModel = delegateComboBox->model();

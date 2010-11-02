@@ -167,7 +167,7 @@ void MainWindow::filterOnConversation(const QModelIndex& index)
 
 void MainWindow::addEvent()
 {
-    addToView(ui->eventsView);
+    addToView(ui->eventsView, new EventDialog(this));
 }
 
 void MainWindow::deleteEvent()
@@ -177,51 +177,74 @@ void MainWindow::deleteEvent()
 
 void MainWindow::addConversation()
 {
-    //addToView(ui->conversationsView);
+    addToView(ui->conversationsView, new ConversationDialog(this), conversationsTableModel);
 }
 
 void MainWindow::deleteConversation()
 {
-    //deleteFromView(ui->conversationsView);
+    deleteFromView(ui->conversationsView, conversationsTableModel);
 }
 
-void MainWindow::addToView(QAbstractItemView *view)
+void MainWindow::addToView(QAbstractItemView *view, SqlRelationalTableDialog *dialog, QSqlRelationalTableModel *model)
 {
-    int row = view->currentIndex().row() + 1;
-    EventDialog *eventDialog = new EventDialog(this);
-    eventDialog->setWindowModality(Qt::WindowModal);
-    QSqlRelationalTableModel *sqlModel = qobject_cast<QSqlRelationalTableModel*>(view->model());
-    if (!sqlModel)
+    // TODO set sensible row in this case
+    int row = 0;
+
+    if (!model) {
+        model = qobject_cast<QSqlRelationalTableModel*>(view->model());
+        Q_ASSERT(model);
+        if (!model)
+            return;
+        row = view->currentIndex().row();
+    }
+
+    Q_ASSERT(dialog);
+    if (!dialog)
         return;
-    eventDialog->setModelRow(sqlModel, row);
-    int result = eventDialog->exec();
+
+    dialog->setWindowModality(Qt::WindowModal);
+    dialog->setModelRow(model, row);
+    int result = dialog->exec();
     if (result == QDialog::Accepted) {
-        bool rowWasInserted = sqlModel->insertRow(row);
+        bool rowWasInserted = model->insertRow(row);
         Q_ASSERT(rowWasInserted);
         if (!rowWasInserted)
             return;
-        eventDialog->writeToModel();
-        sqlModel->submit();
+        dialog->writeToModel();
+        model->submit();
     }
 }
 
-void MainWindow::deleteFromView(QAbstractItemView *view)
+void MainWindow::deleteFromView(QAbstractItemView *view, QSqlRelationalTableModel *model)
 {
-    QSqlRelationalTableModel *sqlModel = qobject_cast<QSqlRelationalTableModel*>(view->model());
-    if (!sqlModel)
-        return;
-    bool rowWasRemoved = sqlModel->removeRow(view->currentIndex().row());
+    if (!model)
+        model = qobject_cast<QSqlRelationalTableModel*>(view->model());
+        Q_ASSERT(model);
+        if (!model)
+            return;
+
+    bool rowWasRemoved = model->removeRow(view->currentIndex().row());
     Q_ASSERT(rowWasRemoved);
     if (!rowWasRemoved)
         return;
-    sqlModel->submit();
+    model->submit();
 }
 
 void MainWindow::reloadConversations()
 {
-    if (conversationsTreeModel)
-        conversationsTreeModel->reset();
-    // TODO Select the correct index after reset
+    if (!conversationsTreeModel || !ui->conversationsView)
+        return;
+
+    QModelIndex index = ui->conversationsView->currentIndex();
+    int id = conversationsTreeModel->data(index, SqlTreeModel::IdRole).toInt();
+    conversationsTreeModel->reset();
+    index = conversationsTreeModel->index(0, 0);
+    QModelIndexList indexes = conversationsTreeModel->match(index, SqlTreeModel::IdRole, id);
+    Q_ASSERT(!indexes.isEmpty());
+    if (indexes.isEmpty())
+        return;
+
+    ui->conversationsView->setCurrentIndex(indexes.first());
 }
 
 void MainWindow::reloadEvents()
