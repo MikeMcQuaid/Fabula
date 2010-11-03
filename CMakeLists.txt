@@ -18,7 +18,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	add_definitions(
 		-Wall -Werror -Wextra -Wold-style-cast -Wformat=2 -Winit-self
 		-Wundef -Wpointer-arith -Wcast-qual -Wconversion -Wunused
-		-Wmissing-format-attribute -Wredundant-decls -Winline
+		-Wmissing-format-attribute -Wredundant-decls
 		-Wnon-virtual-dtor -Woverloaded-virtual -Wstrict-null-sentinel
 		-Wno-pmf-conversions -Wctor-dtor-privacy
 	)
