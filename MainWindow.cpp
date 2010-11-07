@@ -69,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     eventsModel = new QSqlRelationalTableModel();
     eventsModel->setTable("events");
+    eventsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
     eventsModel->setHeaderData(0, Qt::Horizontal, tr("ID"));
     eventsModel->setHeaderData(1, Qt::Horizontal, tr("Type"));
