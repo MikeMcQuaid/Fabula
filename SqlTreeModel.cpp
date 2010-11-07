@@ -259,7 +259,7 @@ QVariant SqlTreeModel::data(const QModelIndex &index, int role) const
         return item->id();
 
     if (role == TableRole)
-        return item->id();
+        return item->table();
 
     return QVariant();
 }
