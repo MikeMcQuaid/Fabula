@@ -106,26 +106,28 @@ bool Database::create()
     }
 
     // TODO: Temporary import of dummy data for testing
-    sqlQuery.exec("insert into characters(id, name) values (1, 'Character')");
-    sqlQuery.exec("insert into characters(id, name) values (2, 'Character2')");
-    sqlQuery.exec("insert into characters(id, name) values (3, 'Character3')");
-    sqlQuery.exec("insert into characters(id, name) values (4, 'Character4')");
-    sqlQuery.exec("insert into characters(id, name) values (5, 'Character5')");
-    sqlQuery.exec("insert into writers(id, name) values (1, 'Writer')");
-    sqlQuery.exec("insert into writers(id, name) values (2, 'Writer2')");
-    sqlQuery.exec("insert into conversations(id, conversation_type_id, writer_id, name) values (1, 1, 1, 'Conversation')");
-    sqlQuery.exec("insert into conversations(id, conversation_type_id, writer_id, name) values (2, 2, 2, 'Conversation2')");
+    sqlQuery.exec("insert into characters(id, name) values (1, 'Mike')");
+    sqlQuery.exec("insert into characters(id, name) values (2, 'Bob')");
+    sqlQuery.exec("insert into characters(id, name) values (3, 'James')");
+    sqlQuery.exec("insert into characters(id, name) values (4, 'David')");
+    sqlQuery.exec("insert into characters(id, name) values (5, 'Terence')");
+    sqlQuery.exec("insert into writers(id, name) values (1, 'Jonas')");
+    sqlQuery.exec("insert into writers(id, name) values (2, 'Gelo')");
+    sqlQuery.exec("insert into conversations(id, conversation_type_id, writer_id, name) values (1, 1, 1, 'First Meeting')");
+    sqlQuery.exec("insert into conversations(id, conversation_type_id, writer_id, name) values (2, 2, 2, 'Drunken Reunion')");
     sqlQuery.exec("insert into conversations_events(id, conversation_id, event_id, sort) values (1, 1, 1, 1)");
     sqlQuery.exec("insert into conversations_events(id, conversation_id, event_id, sort) values (2, 2, 2, 2)");
-    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (1, 1, 1, 1, 1, 'There once was a man named Bob1')");
-    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (2, 1, 2, 2, 2, 'There once was a man named Bob2')");
-    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (3, 1, 1, 3, 1, 'There once was a man named Bob3')");
-    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (4, 1, 2, 4, 1, 'There once was a man named Bob4')");
-    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (5, 1, 1, 5, 1, 'There once was a man named Bob5')");
-    sqlQuery.exec("insert into audiofiles(id, url) values (1, 'AudioFile.mp4')");
-    sqlQuery.exec("insert into audiofiles(id, url) values (2, 'AudioFile2.mp4')");
-    sqlQuery.exec("insert into conversation_types(id, name) values (1, 'ConversationType')");
-    sqlQuery.exec("insert into conversation_types(id, name) values (2, 'ConversationType2')");
+    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (1, 1, 1, 1, 1, 'Hey dude, how's it going?)");
+    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (2, 1, 2, 2, 2, 'Fine day today, don't you think?)");
+    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (3, 1, 1, 3, 1, 'Is your face always that colour?')");
+    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (4, 1, 2, 4, 1, 'Why would you say that?')");
+    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (5, 1, 1, 5, 1, 'I slap your face!')");
+    sqlQuery.exec("insert into audiofiles(id, url) values (1, 'Recording.mp4')");
+    sqlQuery.exec("insert into audiofiles(id, url) values (2, 'Recording2.wav')");
+    sqlQuery.exec("insert into conversation_types(id, name) values (1, 'Interactive')");
+    sqlQuery.exec("insert into conversation_types(id, name) values (2, 'Overhead')");
+    sqlQuery.exec("insert into conversation_types(id, name) values (2, 'Subsequent')");
+    sqlQuery.exec("insert into conversation_types(id, name) values (2, 'AI Bark')");
     sqlQuery.exec("insert into event_types(id, name) values (1, 'Speech')");
     sqlQuery.exec("insert into event_types(id, name) values (2, 'Logic')");
     sqlQuery.exec("insert into event_types(id, name) values (3, 'Comment')");
