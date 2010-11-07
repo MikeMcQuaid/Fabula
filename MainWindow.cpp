@@ -237,11 +237,21 @@ void MainWindow::reloadConversations()
         return;
 
     QModelIndex index = ui->conversationsView->currentIndex();
-    int id = conversationsTreeModel->data(index, SqlTreeModel::IdRole).toInt();
+    const QString &table = conversationsTreeModel->data(index, SqlTreeModel::TableRole).toString();
+    // TODO Only try to set new characters, not a conversation within it.
+    if (table != "characters") {
+        qDebug() << table;
+        return;
+    }
+
+    const QString &character = conversationsTreeModel->data(index, Qt::DisplayRole).toString();
     conversationsTreeModel->reset();
+    // Reset the index to search from the beginning of the model
     index = conversationsTreeModel->index(0, 0);
-    QModelIndexList indexes = conversationsTreeModel->match(index, SqlTreeModel::IdRole, id);
-    Q_ASSERT(!indexes.isEmpty());
+    QModelIndexList indexes = conversationsTreeModel->match(index, Qt::DisplayRole, character);
+
+    // TODO Re-add assert when works consistently
+    //Q_ASSERT(!indexes.isEmpty());
     if (indexes.isEmpty())
         return;
 
