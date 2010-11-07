@@ -43,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QString fileName = settings.value("database").toString();
 
-    if (fileName.isEmpty()) {
+    if (fileName.isEmpty() || !QFile(fileName).exists()) {
         newFile();
     }
     else {
