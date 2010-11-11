@@ -24,6 +24,12 @@
 #include <QStringList>
 #include <QDebug>
 
+#ifdef QT_DEBUG
+    bool debugMode = true;
+#else
+    bool debugMode = false;
+#endif
+
 Database::Database(const QString &path, QObject *parent) :
         QObject(parent)
 {
@@ -47,33 +53,31 @@ Database::Database(const QString &path, QObject *parent) :
     }
 }
 
-// TODO: Add conversation global variable prerequisites
-
 bool Database::create()
 {
     QMap<QString, QString> databaseStructure;
 
-    databaseStructure.insert("characters",
+    databaseStructure.insert(CharactersTable,
                              "id integer primary key autoincrement, "
                              "name text unique");
 
-    databaseStructure.insert("writers",
+    databaseStructure.insert(WritersTable,
                              "id integer primary key autoincrement, "
                              "name text unique");
 
-    databaseStructure.insert("conversations",
+    databaseStructure.insert(ConversationsTable,
                              "id integer primary key autoincrement, "
                              "conversation_type_id integer not null, "
                              "writer_id integer not null, "
                              "name text unique");
 
-    databaseStructure.insert("conversations_events",
+    databaseStructure.insert(ConversationsEventsTable,
                              "id integer primary key autoincrement, "
                              "conversation_id integer not null, "
                              "event_id integer not null, "
                              "sort integer not null");
 
-    databaseStructure.insert("events",
+    databaseStructure.insert(EventsTable,
                              "id integer primary key autoincrement, "
                              "event_type_id integer not null, "
                              "conversation_id integer not null, "
@@ -81,15 +85,15 @@ bool Database::create()
                              "audiofile_id integer, "
                              "text text");
 
-    databaseStructure.insert("audiofiles",
+    databaseStructure.insert(AudiofilesTable,
                              "id integer primary key autoincrement, "
                              "url text");
 
-    databaseStructure.insert("conversation_types",
+    databaseStructure.insert(ConversationTypesTable,
                              "id integer primary key autoincrement, "
                              "name text unique");
 
-    databaseStructure.insert("event_types",
+    databaseStructure.insert(EventTypesTable,
                              "id integer primary key autoincrement, "
                              "name text unique");
 
@@ -105,32 +109,66 @@ bool Database::create()
         }
     }
 
-    // TODO: Temporary import of dummy data for testing
-    sqlQuery.exec("insert into characters(id, name) values (1, 'Mike')");
-    sqlQuery.exec("insert into characters(id, name) values (2, 'Bob')");
-    sqlQuery.exec("insert into characters(id, name) values (3, 'James')");
-    sqlQuery.exec("insert into characters(id, name) values (4, 'David')");
-    sqlQuery.exec("insert into characters(id, name) values (5, 'Terence')");
-    sqlQuery.exec("insert into writers(id, name) values (1, 'Jonas')");
-    sqlQuery.exec("insert into writers(id, name) values (2, 'Gelo')");
-    sqlQuery.exec("insert into conversations(id, conversation_type_id, writer_id, name) values (1, 1, 1, 'First Meeting')");
-    sqlQuery.exec("insert into conversations(id, conversation_type_id, writer_id, name) values (2, 2, 2, 'Drunken Reunion')");
-    sqlQuery.exec("insert into conversations_events(id, conversation_id, event_id, sort) values (1, 1, 1, 1)");
-    sqlQuery.exec("insert into conversations_events(id, conversation_id, event_id, sort) values (2, 2, 2, 2)");
-    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (1, 1, 1, 1, 1, 'Hey dude, how's it going?)");
-    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (2, 1, 2, 2, 2, 'Fine day today, don't you think?)");
-    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (3, 1, 1, 3, 1, 'Is your face always that colour?')");
-    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (4, 1, 2, 4, 1, 'Why would you say that?')");
-    sqlQuery.exec("insert into events(id, event_type_id, conversation_id, character_id, audiofile_id, text) values (5, 1, 1, 5, 1, 'I slap your face!')");
-    sqlQuery.exec("insert into audiofiles(id, url) values (1, 'Recording.mp4')");
-    sqlQuery.exec("insert into audiofiles(id, url) values (2, 'Recording2.wav')");
-    sqlQuery.exec("insert into conversation_types(id, name) values (1, 'Interactive')");
-    sqlQuery.exec("insert into conversation_types(id, name) values (2, 'Overhead')");
-    sqlQuery.exec("insert into conversation_types(id, name) values (2, 'Subsequent')");
-    sqlQuery.exec("insert into conversation_types(id, name) values (2, 'AI Bark')");
-    sqlQuery.exec("insert into event_types(id, name) values (1, 'Speech')");
-    sqlQuery.exec("insert into event_types(id, name) values (2, 'Logic')");
-    sqlQuery.exec("insert into event_types(id, name) values (3, 'Comment')");
+    if (debugMode)
+        return insertDummyData();
+
+    return true;
+}
+
+bool Database::insertDummyData()
+{
+    QStringList insertQueries;
+    QString insert("insert into %1(id, %2) values (%3)");
+
+    QString insertCharacter(insert.arg(CharactersTable).arg("name"));
+    insertQueries.append(insertCharacter.arg("1, 'Mike'"));
+    insertQueries.append(insertCharacter.arg("2, 'Bob'"));
+    insertQueries.append(insertCharacter.arg("3, 'James'"));
+    insertQueries.append(insertCharacter.arg("4, 'David'"));
+    insertQueries.append(insertCharacter.arg("5, 'Terence'"));
+
+    QString insertWriter(insert.arg(WritersTable).arg("name"));
+    insertQueries.append(insertWriter.arg("1, 'Jonas'"));
+    insertQueries.append(insertWriter.arg("2, 'Gelo'"));
+
+    QString insertConversation(insert.arg(ConversationsTable).arg("conversation_type_id, writer_id, name"));
+    insertQueries.append(insertConversation.arg("1, 1, 1, 'First Meeting'"));
+    insertQueries.append(insertConversation.arg("2, 2, 2, 'Drunken Reunion'"));
+
+    QString insertConversationEvent(insert.arg(ConversationsEventsTable).arg("conversation_id, event_id, sort"));
+    insertQueries.append(insertConversationEvent.arg("1, 1, 1, 1"));
+    insertQueries.append(insertConversationEvent.arg("2, 2, 2, 2"));
+
+    QString insertEvent(insert.arg(EventsTable).arg("event_type_id, conversation_id, character_id, audiofile_id, text"));
+    insertQueries.append(insertEvent.arg("1, 1, 1, 1, 1, 'Hey dude, how is it going?'"));
+    insertQueries.append(insertEvent.arg("2, 1, 2, 2, 2, 'Fine day today, eh?'"));
+    insertQueries.append(insertEvent.arg("3, 1, 1, 3, 1, 'Is your face always that colour?'"));
+    insertQueries.append(insertEvent.arg("4, 1, 2, 4, 1, 'Why would you say that?'"));
+    insertQueries.append(insertEvent.arg("5, 1, 1, 5, 1, 'I slap your face!'"));
+
+    QString insertAudiofile(insert.arg(AudiofilesTable).arg("url"));
+    insertQueries.append(insertAudiofile.arg("1, 'Recording.mp4'"));
+    insertQueries.append(insertAudiofile.arg("2, 'Recording2.wav'"));
+
+    QString insertConversationType(insert.arg(ConversationTypesTable).arg("name"));
+    insertQueries.append(insertConversationType.arg("1, 'Interactive'"));
+    insertQueries.append(insertConversationType.arg("2, 'Overhead'"));
+    insertQueries.append(insertConversationType.arg("3, 'Subsequent'"));
+    insertQueries.append(insertConversationType.arg("4, 'AI Bark'"));
+
+    QString insertEventType(insert.arg(EventTypesTable).arg("name"));
+    insertQueries.append(insertEventType.arg("1, 'Speech'"));
+    insertQueries.append(insertEventType.arg("2, 'Logic'"));
+    insertQueries.append(insertEventType.arg("3, 'Comment'"));
+
+    QSqlQuery sqlQuery;
+    foreach(const QString &query, insertQueries) {
+        if (!sqlQuery.exec(query)) {
+            qWarning() << tr("Unable to run insertion: '%1'").arg(query);
+            qWarning() << sqlQuery.lastError().text();
+            return false;
+        }
+    }
 
     return true;
 }
