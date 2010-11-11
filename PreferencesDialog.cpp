@@ -1,6 +1,8 @@
 #include "PreferencesDialog.h"
 #include "ui_PreferencesDialog.h"
 
+#include "Database.h"
+
 #include <QDebug>
 #include <QSqlTableModel>
 #include <QSettings>
@@ -11,7 +13,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     QSqlTableModel *writersModel = new QSqlTableModel(this);
-    writersModel->setTable("writers");
+    writersModel->setTable(WritersTable);
     writersModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
     writersModel->select();
     ui->writerComboBox->setModel(writersModel);

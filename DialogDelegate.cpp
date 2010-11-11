@@ -4,6 +4,7 @@
 #include "EventDialog.h"
 #include "SqlTreeModel.h"
 #include "SqlRelationalTableDialog.h"
+#include "Database.h"
 
 #include <QDebug>
 #include <QItemEditorFactory>
@@ -21,9 +22,9 @@ QWidget* DialogDelegate::createEditor(QWidget *parent, const QStyleOptionViewIte
         return 0;
 
     SqlRelationalTableDialog *dialog = 0;
-    if (model->tableName() == "conversations")
+    if (model->tableName() == ConversationsTable)
         dialog = new ConversationDialog(parent);
-    else if (model->tableName() == "events")
+    else if (model->tableName() == EventsTable)
         dialog = new EventDialog(parent);
 
     Q_ASSERT(dialog);

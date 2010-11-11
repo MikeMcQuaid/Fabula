@@ -17,6 +17,8 @@
 
 #include "SqlTreeModel.h"
 
+#include "Database.h"
+
 #include <QStringList>
 #include <QDebug>
 #include <QSqlQuery>
@@ -126,8 +128,8 @@ void SqlTreeModel::reset()
 
 void SqlTreeModel::loadData()
 {
-    tables.append("characters");
-    tables.append("conversations");
+    tables.append(CharactersTable);
+    tables.append(ConversationsTable);
 
     m_rootItem = new SqlTreeItem("Conversations");
 
@@ -156,11 +158,11 @@ void SqlTreeModel::loadData()
 
     foreach(const QString& characterName, charactersConversations.uniqueKeys()) {
         const qint64 characterId = charactersIds.value(characterName);
-        SqlTreeItem* character = new SqlTreeItem(characterName, "characters", m_rootItem, characterId, characterIcon);
+        SqlTreeItem* character = new SqlTreeItem(characterName, CharactersTable, m_rootItem, characterId, characterIcon);
         m_rootItem->appendChild(character);
         foreach(const QString& conversationName, charactersConversations.values(characterName)) {
             const qint64 conversationId = conversationsIds.value(conversationName);
-            SqlTreeItem* conversation = new SqlTreeItem(conversationName, "conversations", character, conversationId, conversationIcon);
+            SqlTreeItem* conversation = new SqlTreeItem(conversationName, ConversationsTable, character, conversationId, conversationIcon);
             character->appendChild(conversation);
         }
     }

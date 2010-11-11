@@ -240,7 +240,7 @@ void MainWindow::reloadConversations()
     QModelIndex index = ui->conversationsView->currentIndex();
     const QString &table = conversationsTreeModel->data(index, SqlTreeModel::TableRole).toString();
     // TODO Only try to set new characters, not a conversation within it.
-    if (table != "characters") {
+    if (table != CharactersTable) {
         qDebug() << table;
         return;
     }
