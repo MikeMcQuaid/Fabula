@@ -51,6 +51,8 @@ Database::Database(const QString &path, QObject *parent) :
             return;
         }
     }
+
+    setupRelations();
 }
 
 bool Database::create()
@@ -171,6 +173,31 @@ bool Database::insertDummyData()
     }
 
     return true;
+}
+
+QMap<int, QSqlRelation> Database::tableRelations(const QLatin1String &table) const
+{
+    return m_tableRelations.value(table);
+}
+
+void Database::setupRelations()
+{
+    QMap<int, QSqlRelation> conversationsRelations;
+    conversationsRelations.insert(1, QSqlRelation(ConversationTypesTable, "id", "name"));
+    conversationsRelations.insert(2, QSqlRelation(WritersTable, "id", "name"));
+    m_tableRelations.insert(ConversationsTable, conversationsRelations);
+
+    QMap<int, QSqlRelation> conversationsEventsRelations;
+    conversationsEventsRelations.insert(1, QSqlRelation(ConversationsTable, "id", "name"));
+    conversationsEventsRelations.insert(2, QSqlRelation(EventsTable, "id", "text"));
+    m_tableRelations.insert(ConversationsEventsTable, conversationsEventsRelations);
+
+    QMap<int, QSqlRelation> eventsRelations;
+    eventsRelations.insert(1, QSqlRelation(EventTypesTable, "id", "name"));
+    eventsRelations.insert(2, QSqlRelation(ConversationsTable, "id", "name"));
+    eventsRelations.insert(3, QSqlRelation(CharactersTable, "id", "name"));
+    eventsRelations.insert(4, QSqlRelation(AudiofilesTable, "id", "url"));
+    m_tableRelations.insert(EventsTable, eventsRelations);
 }
 
 Database::~Database()

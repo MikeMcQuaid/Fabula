@@ -68,19 +68,19 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(filterOnConversation(QModelIndex)));
 
     eventsModel = new QSqlRelationalTableModel();
-    eventsModel->setTable("events");
+    eventsModel->setTable(EventsTable);
     eventsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
     eventsModel->setHeaderData(0, Qt::Horizontal, tr("ID"));
     eventsModel->setHeaderData(1, Qt::Horizontal, tr("Type"));
-    eventsModel->setRelation(1, QSqlRelation("event_types", "id", "name"));
     eventsModel->setHeaderData(2, Qt::Horizontal, tr("Conversation"));
-    eventsModel->setRelation(2, QSqlRelation("conversations", "id", "name"));
     eventsModel->setHeaderData(3, Qt::Horizontal, tr("Character"));
-    eventsModel->setRelation(3, QSqlRelation("characters", "id", "name"));
     eventsModel->setHeaderData(4, Qt::Horizontal, tr("Audio File"));
-    eventsModel->setRelation(4, QSqlRelation("audiofiles", "id", "url"));
     eventsModel->setHeaderData(5, Qt::Horizontal, tr("Text"));
+
+    QMap<int, QSqlRelation> eventsRelations = database->tableRelations(EventsTable);
+    foreach(int column, eventsRelations.keys())
+        eventsModel->setRelation(column, eventsRelations.value(column));
 
     eventsModel->select();
 
@@ -99,10 +99,11 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(reloadConversations()));
 
     conversationsTableModel = new QSqlRelationalTableModel();
-    conversationsTableModel->setTable("conversations");
+    conversationsTableModel->setTable(ConversationsTable);
 
-    conversationsTableModel->setRelation(1, QSqlRelation("conversation_types", "id", "name"));
-    conversationsTableModel->setRelation(2, QSqlRelation("writers", "id", "name"));
+    QMap<int, QSqlRelation> conversationsRelations = database->tableRelations(ConversationsTable);
+    foreach(int column, conversationsRelations.keys())
+        conversationsTableModel->setRelation(column, conversationsRelations.value(column));
 
     conversationsTableModel->select();
 }

@@ -19,6 +19,8 @@
 #define DATABASE_H
 
 #include <QObject>
+#include <QMap>
+#include <QSqlRelation>
 
 static const QLatin1String CharactersTable("characters");
 static const QLatin1String WritersTable("writers");
@@ -35,10 +37,13 @@ Q_OBJECT
 public:
     explicit Database(const QString &path, QObject *parent = 0);
     ~Database();
+    QMap<int, QSqlRelation> tableRelations(const QLatin1String &table) const;
 
 private:
     bool create();
     bool insertDummyData();
+    void setupRelations();
+    QMap<QLatin1String, QMap<int, QSqlRelation> > m_tableRelations;
 };
 
 #endif // DATABASE_H
