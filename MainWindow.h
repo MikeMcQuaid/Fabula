@@ -52,6 +52,7 @@ public slots:
     void deleteFromView(QAbstractItemView *view, QSqlRelationalTableModel *model = 0);
     void reloadConversations();
     void reloadEvents();
+    void editEvent(const QModelIndex &index);
 
 protected:
     void changeEvent(QEvent *e);

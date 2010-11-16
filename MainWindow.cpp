@@ -90,6 +90,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     DialogDelegate *eventDelegate = new DialogDelegate(this);
     ui->eventsView->setItemDelegate(eventDelegate);
+    //ui->eventsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    //connect(ui->eventsView, SIGNAL(activated(QModelIndex)), this, SLOT(editEvent(QModelIndex)));
 
     conversationsTreeModel = new SqlTreeModel(this);
     ui->conversationsView->setModel(conversationsTreeModel);
@@ -265,6 +267,14 @@ void MainWindow::reloadEvents()
         eventsModel->select();
     if (ui->conversationsView)
         filterOnConversation(ui->conversationsView->currentIndex());
+}
+
+void MainWindow::editEvent(const QModelIndex &index)
+{
+    EventDialog *dialog = new EventDialog(this);
+    dialog->setWindowModality(Qt::WindowModal);
+    dialog->setModelRow(eventsModel, index.row());
+    dialog->show();
 }
 
 MainWindow::~MainWindow()
