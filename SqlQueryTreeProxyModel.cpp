@@ -2,6 +2,7 @@
 
 #include <QItemSelection>
 #include <QSqlQueryModel>
+#include <QDebug>
 
 SqlQueryTreeProxyModel::SqlQueryTreeProxyModel(QObject *parent) :
     QAbstractProxyModel(parent)
@@ -15,7 +16,7 @@ SqlQueryTreeProxyModel::SqlQueryTreeProxyModel(QObject *parent) :
 
 QModelIndex	SqlQueryTreeProxyModel::mapFromSource(const QModelIndex &sourceIndex) const
 {
-    return index(sourceIndex.row(), sourceIndex.column());
+    return index(sourceIndex.row(), 0);
 }
 
 QItemSelection SqlQueryTreeProxyModel::mapSelectionFromSource(const QItemSelection &sourceSelection) const
@@ -30,7 +31,10 @@ QItemSelection SqlQueryTreeProxyModel::mapSelectionToSource(const QItemSelection
 
 QModelIndex	SqlQueryTreeProxyModel::mapToSource(const QModelIndex &proxyIndex) const
 {
-    return sourceModel()->index(proxyIndex.row(), proxyIndex.column(), proxyIndex.parent());
+    QModelIndex parentIndex = proxyIndex.parent();
+    if (parentIndex.isValid())
+        return sourceModel()->index(parentIndex.row(), 1);
+    return sourceModel()->index(proxyIndex.row(), 0);
 }
 
 QVariant SqlQueryTreeProxyModel::data(const QModelIndex &proxyIndex, int role) const
@@ -38,34 +42,55 @@ QVariant SqlQueryTreeProxyModel::data(const QModelIndex &proxyIndex, int role) c
     if (!proxyIndex.isValid())
         return QVariant();
 
-    return QAbstractProxyModel::data(proxyIndex, role);
+    QModelIndex parent = proxyIndex.parent();
+    if (!parent.isValid())
+        return QAbstractProxyModel::data(proxyIndex, role);
+
+    QModelIndex firstIndex = sourceModel()->index(0, 0);
+    QVariant parentData = sourceModel()->data(parent, role);
+    if (!parentData.isValid())
+        return sourceModel()->data(proxyIndex, role);
+
+    QModelIndexList indexes = sourceModel()->match(firstIndex, role, parentData, -1);
+    QModelIndex parentIndex = indexes.at(proxyIndex.row());
+    QModelIndex index = sourceModel()->index(parentIndex.row(), 1);
+
+    return sourceModel()->data(index, role);
 }
 
 QModelIndex SqlQueryTreeProxyModel::index(int row, int column, const QModelIndex &parent) const
 {
-    if (!sourceModel()->hasIndex(row, column, parent))
+    if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    return createIndex(row, column);
+    quint32 internalId = parent.row() + 1;
+    return createIndex(row, column, internalId);
 }
 
 QModelIndex SqlQueryTreeProxyModel::parent(const QModelIndex &child) const
 {
-    if (!child.isValid())
+    if (!child.isValid() || !child.internalId())
         return QModelIndex();
 
-
-    return QModelIndex();
+    int parentRowId = child.internalId() - 1;
+    return createIndex(parentRowId, 0);
 }
 
 int SqlQueryTreeProxyModel::rowCount(const QModelIndex &parent) const
 {
-    return sourceModel()->rowCount(mapToSource(parent));
+    // TODO: Checking parent of parent is a nasty hack but it works for now.
+    if (!parent.isValid() || parent.parent().isValid())
+        return sourceModel()->rowCount(mapToSource(parent));
+
+    QModelIndex firstIndex = sourceModel()->index(0, 0);
+    QVariant parentData = sourceModel()->data(parent);
+    int matches = sourceModel()->match(firstIndex, Qt::DisplayRole, parentData, -1).size();
+    return matches;
 }
 
-int SqlQueryTreeProxyModel::columnCount(const QModelIndex &parent) const
+int SqlQueryTreeProxyModel::columnCount(const QModelIndex &) const
 {
-    return sourceModel()->columnCount(mapToSource(parent));
+    return 1;
 }
 
 void SqlQueryTreeProxyModel::reset()
