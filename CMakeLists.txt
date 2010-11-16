@@ -37,7 +37,6 @@ set(SOURCES
 	DialogDelegate.cpp
 	SqlRelationalTableDialog.cpp
 )
-qt4_automoc(${SOURCES})
 
 set(HEADERS
 	MainWindow.h
