@@ -82,12 +82,8 @@ bool Database::create()
                              "event_type_id integer not null, "
                              "conversation_id integer not null, "
                              "character_id integer, "
-                             "audiofile_id integer, "
+                             "audiofile text unique, "
                              "text text");
-
-    databaseStructure.insert(AudiofilesTable,
-                             "id integer primary key autoincrement, "
-                             "url text");
 
     databaseStructure.insert(ConversationTypesTable,
                              "id integer primary key autoincrement, "
@@ -139,16 +135,12 @@ bool Database::insertDummyData()
     insertQueries.append(insertConversationEvent.arg("1, 1, 1, 1"));
     insertQueries.append(insertConversationEvent.arg("2, 2, 2, 2"));
 
-    QString insertEvent(insert.arg(EventsTable).arg("event_type_id, conversation_id, character_id, audiofile_id, text"));
-    insertQueries.append(insertEvent.arg("1, 1, 1, 1, 1, 'Hey dude, how is it going?'"));
-    insertQueries.append(insertEvent.arg("2, 1, 2, 2, 2, 'Fine day today, eh?'"));
-    insertQueries.append(insertEvent.arg("3, 1, 1, 3, 1, 'Is your face always that colour?'"));
-    insertQueries.append(insertEvent.arg("4, 1, 2, 4, 1, 'Why would you say that?'"));
-    insertQueries.append(insertEvent.arg("5, 1, 1, 5, 1, 'I slap your face!'"));
-
-    QString insertAudiofile(insert.arg(AudiofilesTable).arg("url"));
-    insertQueries.append(insertAudiofile.arg("1, 'Recording.mp4'"));
-    insertQueries.append(insertAudiofile.arg("2, 'Recording2.wav'"));
+    QString insertEvent(insert.arg(EventsTable).arg("event_type_id, conversation_id, character_id, audiofile, text"));
+    insertQueries.append(insertEvent.arg("1, 1, 1, 1, '1.mp4', 'Hey dude, how is it going?'"));
+    insertQueries.append(insertEvent.arg("2, 1, 2, 2, '2.mp3', 'Fine day today, eh?'"));
+    insertQueries.append(insertEvent.arg("3, 1, 1, 3, '3.wav', 'Is your face always that colour?'"));
+    insertQueries.append(insertEvent.arg("4, 1, 2, 4, '4.mp3', 'Why would you say that?'"));
+    insertQueries.append(insertEvent.arg("5, 1, 1, 5, '5.mp3', 'I slap your face!'"));
 
     QString insertConversationType(insert.arg(ConversationTypesTable).arg("name"));
     insertQueries.append(insertConversationType.arg("1, 'Interactive'"));
@@ -191,7 +183,6 @@ QMap<int, QSqlRelation> Database::tableRelations(const QLatin1String &table)
         eventsRelations.insert(1, QSqlRelation(EventTypesTable, "id", "name"));
         eventsRelations.insert(2, QSqlRelation(ConversationsTable, "id", "name"));
         eventsRelations.insert(3, QSqlRelation(CharactersTable, "id", "name"));
-        eventsRelations.insert(4, QSqlRelation(AudiofilesTable, "id", "url"));
         relations.insert(EventsTable, eventsRelations);
     }
 

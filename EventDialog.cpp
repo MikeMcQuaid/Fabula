@@ -26,7 +26,7 @@ EventDialog::EventDialog(QWidget *parent) :
     m_columnComboBox.insert(TypeColumn, ui->typeComboBox);
     m_columnComboBox.insert(ConversationColumn, ui->conversationComboBox);
     m_columnComboBox.insert(CharacterColumn, ui->characterComboBox);
-    m_columnComboBox.insert(AudioFileColumn, ui->audioFileComboBox);
+    m_columnLineEdit.insert(AudioFileColumn, ui->audioFileLineEdit);
     m_columnTextEdit.insert(TextColumn, ui->textEdit);
 
     connect(ui->typeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(changedEventType(QString)));

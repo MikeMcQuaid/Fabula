@@ -75,8 +75,8 @@
          </widget>
         </item>
         <item row="3" column="1">
-         <widget class="QComboBox" name="audioFileComboBox">
-          <property name="editable">
+         <widget class="QLineEdit" name="audioFileLineEdit">
+          <property name="readOnly">
            <bool>true</bool>
           </property>
          </widget>

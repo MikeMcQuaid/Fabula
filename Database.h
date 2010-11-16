@@ -27,7 +27,6 @@ static const QLatin1String WritersTable("writers");
 static const QLatin1String ConversationsTable("conversations");
 static const QLatin1String ConversationsEventsTable("conversations_events");
 static const QLatin1String EventsTable("events");
-static const QLatin1String AudiofilesTable("audiofiles");
 static const QLatin1String ConversationTypesTable("conversation_types");
 static const QLatin1String EventTypesTable("event_types");
 
