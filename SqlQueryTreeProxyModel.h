@@ -1,9 +1,9 @@
 #ifndef SQLQUERYTREEPROXYMODEL_H
 #define SQLQUERYTREEPROXYMODEL_H
 
-#include <QAbstractProxyModel>
+#include <QSortFilterProxyModel>
 
-class SqlQueryTreeProxyModel : public QAbstractProxyModel
+class SqlQueryTreeProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
@@ -17,7 +17,10 @@ public:
     QModelIndex parent(const QModelIndex &child) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
     void reset();
+protected:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
 };
 
 #endif // SQLQUERYTREEPROXYMODEL_H

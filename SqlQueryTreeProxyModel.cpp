@@ -6,13 +6,14 @@
 #include <QStringList>
 
 SqlQueryTreeProxyModel::SqlQueryTreeProxyModel(QObject *parent) :
-    QAbstractProxyModel(parent)
+    QSortFilterProxyModel(parent)
 {
     QSqlQueryModel *sourceModel = new QSqlQueryModel(this);
     sourceModel->setQuery("select characters.name, conversations.name from events "
                           "inner join characters on events.character_id = characters.id "
                           "inner join conversations on events.conversation_id = conversations.id");
     setSourceModel(sourceModel);
+    setDynamicSortFilter(true);
 }
 
 QModelIndex	SqlQueryTreeProxyModel::mapFromSource(const QModelIndex &sourceIndex) const
@@ -22,12 +23,12 @@ QModelIndex	SqlQueryTreeProxyModel::mapFromSource(const QModelIndex &sourceIndex
 
 QItemSelection SqlQueryTreeProxyModel::mapSelectionFromSource(const QItemSelection &sourceSelection) const
 {
-    return QAbstractProxyModel::mapSelectionFromSource(sourceSelection);
+    return QSortFilterProxyModel::mapSelectionFromSource(sourceSelection);
 }
 
 QItemSelection SqlQueryTreeProxyModel::mapSelectionToSource(const QItemSelection &proxySelection) const
 {
-    return QAbstractProxyModel::mapSelectionToSource(proxySelection);
+    return QSortFilterProxyModel::mapSelectionToSource(proxySelection);
 }
 
 QModelIndex	SqlQueryTreeProxyModel::mapToSource(const QModelIndex &proxyIndex) const
@@ -45,7 +46,7 @@ QVariant SqlQueryTreeProxyModel::data(const QModelIndex &proxyIndex, int role) c
 
     QModelIndex parent = proxyIndex.parent();
     if (!parent.isValid())
-        return QAbstractProxyModel::data(proxyIndex, role);
+        return QSortFilterProxyModel::data(proxyIndex, role);
 
     QModelIndex firstIndex = sourceModel()->index(0, 0);
     QVariant parentData = sourceModel()->data(parent, role);
@@ -85,12 +86,7 @@ int SqlQueryTreeProxyModel::rowCount(const QModelIndex &parent) const
         return 0;
 
     if (!parent.isValid()) {
-        QModelIndexList indexes = sourceModel()->match(firstIndex, Qt::DisplayRole, "", -1);
-        QStringList sourceData;
-        foreach(const QModelIndex &index, indexes)
-            sourceData << sourceModel()->data(index).toString();
-        sourceData.removeDuplicates();
-        return sourceData.size();
+        return sourceModel()->rowCount();
     }
 
     QVariant parentData = sourceModel()->data(parent);
@@ -103,7 +99,32 @@ int SqlQueryTreeProxyModel::columnCount(const QModelIndex &) const
     return 1;
 }
 
+bool SqlQueryTreeProxyModel::hasChildren(const QModelIndex &parent) const
+{
+    // TODO: Horrible, horrible hack but works in the short term
+    return !parent.parent().isValid();
+}
+
 void SqlQueryTreeProxyModel::reset()
 {
-    return QAbstractProxyModel::reset();
+    return QSortFilterProxyModel::reset();
+}
+
+bool SqlQueryTreeProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+{
+    QModelIndex firstIndex = sourceModel()->index(0, 0, sourceParent);
+    QModelIndex rowIndex = sourceModel()->index(sourceRow, 0, sourceParent);
+    QVariant rowData = sourceModel()->data(rowIndex);
+    QModelIndexList indexes = sourceModel()->match(firstIndex, Qt::DisplayRole, "", -1);
+    foreach(const QModelIndex &index, indexes) {
+        //qDebug() << rowData << index.row() << sourceRow;
+        QVariant data = sourceModel()->data(index);
+        //qDebug() << "DATA:" << data;
+        if (rowData == data) { qDebug() << "HERE";
+            return false; }
+        if (index.row() == sourceRow) { qDebug() << "THERE";
+            break; }
+    }
+    Q_ASSERT(false);
+    return true;
 }
