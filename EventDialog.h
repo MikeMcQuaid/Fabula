@@ -21,6 +21,7 @@ public:
 
 private slots:
     void changedEventType(const QString &eventType);
+    void chooseAudioFile();
 
 private:
     QPushButton* okButton();

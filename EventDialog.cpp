@@ -7,6 +7,7 @@
 #include <QSqlRelationalDelegate>
 #include <QSqlRelationalTableModel>
 #include <QTableView>
+#include <QFileDialog>
 
 // TODO Get the columns from the Database class
 enum EventColumn {
@@ -30,6 +31,9 @@ EventDialog::EventDialog(QWidget *parent) :
     m_columnTextEdit.insert(TextColumn, ui->textEdit);
 
     connect(ui->typeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(changedEventType(QString)));
+    // TODO: This is broken with the current delegate system.
+    // TODO: Perhaps move to QDataWidgetMapper to fix this.
+    //connect(ui->audioFilePushButton, SIGNAL(clicked()), this, SLOT(chooseAudioFile()));
 
     setupWidgets();
 }
@@ -38,6 +42,15 @@ void EventDialog::changedEventType(const QString &eventType)
 {
     // TODO Maybe change the event entry box depending event type?
     ui->eventTypeGroupBox->setTitle(eventType);
+}
+
+void EventDialog::chooseAudioFile()
+{
+    QString audioFile = QFileDialog::getOpenFileName(this);
+    if (!audioFile.isNull())
+        return;
+
+    ui->audioFileLineEdit->setText(audioFile);
 }
 
 QPushButton* EventDialog::okButton()
