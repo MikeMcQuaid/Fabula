@@ -20,6 +20,7 @@
 
 #include "Database.h"
 #include "SqlTreeModel.h"
+#include "SqlQueryTreeProxyModel.h"
 #include "PreferencesDialog.h"
 #include "ConversationDialog.h"
 #include "EventDialog.h"
@@ -91,7 +92,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->eventsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     connect(ui->eventsView, SIGNAL(activated(QModelIndex)), this, SLOT(editEvent(QModelIndex)));
 
-    conversationsTreeModel = new SqlTreeModel(this);
+    conversationsTreeModel = new SqlQueryTreeProxyModel(this);
     ui->conversationsView->setModel(conversationsTreeModel);
 
     ui->conversationsView->setEditTriggers(QAbstractItemView::NoEditTriggers);

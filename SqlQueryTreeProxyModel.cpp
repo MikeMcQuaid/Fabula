@@ -3,6 +3,7 @@
 #include <QItemSelection>
 #include <QSqlQueryModel>
 #include <QDebug>
+#include <QStringList>
 
 SqlQueryTreeProxyModel::SqlQueryTreeProxyModel(QObject *parent) :
     QAbstractProxyModel(parent)
@@ -78,11 +79,20 @@ QModelIndex SqlQueryTreeProxyModel::parent(const QModelIndex &child) const
 
 int SqlQueryTreeProxyModel::rowCount(const QModelIndex &parent) const
 {
-    // TODO: Checking parent of parent is a nasty hack but it works for now.
-    if (!parent.isValid() || parent.parent().isValid())
-        return sourceModel()->rowCount(mapToSource(parent));
-
     QModelIndex firstIndex = sourceModel()->index(0, 0);
+    // TODO: Checking parent of parent is a nasty hack but it works for now.
+    if (parent.parent().isValid())
+        return 0;
+
+    if (!parent.isValid()) {
+        QModelIndexList indexes = sourceModel()->match(firstIndex, Qt::DisplayRole, "", -1);
+        QStringList sourceData;
+        foreach(const QModelIndex &index, indexes)
+            sourceData << sourceModel()->data(index).toString();
+        sourceData.removeDuplicates();
+        return sourceData.size();
+    }
+
     QVariant parentData = sourceModel()->data(parent);
     int matches = sourceModel()->match(firstIndex, Qt::DisplayRole, parentData, -1).size();
     return matches;
