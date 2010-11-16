@@ -5,6 +5,7 @@
 #include <QMap>
 
 class QComboBox;
+class QDataWidgetMapper;
 class QLineEdit;
 class QSqlRelationalDelegate;
 class QSqlRelationalTableModel;
@@ -33,6 +34,7 @@ protected:
     void writeFromWidgets();
     virtual QPushButton* okButton() = 0;
 
+    QDataWidgetMapper *m_mapper;
     int m_row;
     QSqlRelationalTableModel *m_model;
     QSqlRelationalDelegate *m_delegate;

@@ -6,11 +6,14 @@
 #include <QPushButton>
 #include <QSqlRelationalDelegate>
 #include <QTextEdit>
+#include <QDataWidgetMapper>
 
 SqlRelationalTableDialog::SqlRelationalTableDialog(QWidget *parent) :
-    QDialog(parent), m_row(0), m_model(0),
-    m_delegate(new QSqlRelationalDelegate(this))
+    QDialog(parent), m_mapper(new QDataWidgetMapper(this)), m_row(0),
+    m_model(0), m_delegate(new QSqlRelationalDelegate(this))
 {
+    m_mapper->setItemDelegate(m_delegate);
+    m_mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
 }
 
 void SqlRelationalTableDialog::setupWidgets()
@@ -44,6 +47,8 @@ void SqlRelationalTableDialog::setModelRow(QSqlRelationalTableModel *model, int 
         return;
 
     m_model = model;
+    m_mapper->setModel(model);
+    m_mapper->setCurrentIndex(row);
 
     writeToWidgets();
 }
@@ -107,6 +112,8 @@ void SqlRelationalTableDialog::writeToComboBox(QComboBox *comboBox) {
     comboBox->setCurrentIndex(delegateComboBox->currentIndex());
 
     delete delegateComboBox;
+
+    //m_mapper->addMapping(comboBox, comboBoxColumn);
 }
 
 void SqlRelationalTableDialog::writeToLineEdit(QLineEdit *lineEdit) {
@@ -124,6 +131,8 @@ void SqlRelationalTableDialog::writeToLineEdit(QLineEdit *lineEdit) {
     lineEdit->setText(delegateLineEdit->text());
 
     delete delegateLineEdit;
+
+    //m_mapper->addMapping(lineEdit, lineEditColumn);
 }
 
 void SqlRelationalTableDialog::writeToTextEdit(QTextEdit *textEdit) {
@@ -141,6 +150,8 @@ void SqlRelationalTableDialog::writeToTextEdit(QTextEdit *textEdit) {
     textEdit->setText(delegateLineEdit->text());
 
     delete delegateLineEdit;
+
+    //m_mapper->addMapping(textEdit, textEditColumn);
 }
 
 void SqlRelationalTableDialog::writeFromComboBox(QComboBox *comboBox) {
