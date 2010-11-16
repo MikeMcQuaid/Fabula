@@ -24,6 +24,8 @@
 #include <QDesktopServices>
 #include <QModelIndex>
 
+#include "SqlRelationalTableDialog.h"
+
 namespace Ui {
     class MainWindow;
 }
@@ -31,7 +33,6 @@ namespace Ui {
 class Database;
 class QAbstractItemView;
 class QSqlRelationalTableModel;
-class SqlRelationalTableDialog;
 class SqlTreeModel;
 
 class MainWindow : public QMainWindow {
@@ -48,11 +49,13 @@ public slots:
     void deleteEvent();
     void addConversation();
     void deleteConversation();
-    void addToView(QAbstractItemView *view, SqlRelationalTableDialog *dialog, QSqlRelationalTableModel *model = 0);
-    void deleteFromView(QAbstractItemView *view, QSqlRelationalTableModel *model = 0);
+    void editViewItem(QAbstractItemView *view, SqlRelationalTableDialog *dialog,
+                      SqlRelationalTableDialog::Mode mode, QSqlRelationalTableModel *model = 0);
+    void deleteViewItem(QAbstractItemView *view, QSqlRelationalTableModel *model = 0);
     void reloadConversations();
     void reloadEvents();
     void editEvent(const QModelIndex &index);
+    void editConversation(const QModelIndex &index);
 
 protected:
     void changeEvent(QEvent *e);

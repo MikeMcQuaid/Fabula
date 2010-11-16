@@ -88,13 +88,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->eventsView->hideColumn(0);
     ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
-    DialogDelegate *eventDelegate = new DialogDelegate(this);
-    ui->eventsView->setItemDelegate(eventDelegate);
-    //ui->eventsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    //connect(ui->eventsView, SIGNAL(activated(QModelIndex)), this, SLOT(editEvent(QModelIndex)));
+    ui->eventsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    connect(ui->eventsView, SIGNAL(activated(QModelIndex)), this, SLOT(editEvent(QModelIndex)));
 
     conversationsTreeModel = new SqlTreeModel(this);
     ui->conversationsView->setModel(conversationsTreeModel);
+
+    ui->conversationsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    //connect(ui->conversationsView, SIGNAL(activated(QModelIndex)), this, SLOT(editConversation(QModelIndex)));
 
     connect(conversationsTreeModel, SIGNAL(submitted()), this, SLOT(reloadEvents()));
     connect(eventsModel, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),
@@ -171,27 +172,42 @@ void MainWindow::filterOnConversation(const QModelIndex& index)
 
 void MainWindow::addEvent()
 {
-    addToView(ui->eventsView, new EventDialog(this));
+    editViewItem(ui->eventsView, new EventDialog(this),
+                 SqlRelationalTableDialog::NewMode);
+}
+
+void MainWindow::editEvent(const QModelIndex &)
+{
+    editViewItem(ui->eventsView, new EventDialog(this),
+                 SqlRelationalTableDialog::EditMode);
 }
 
 void MainWindow::deleteEvent()
 {
-    deleteFromView(ui->eventsView);
+    deleteViewItem(ui->eventsView);
 }
 
 void MainWindow::addConversation()
 {
-    addToView(ui->conversationsView, new ConversationDialog(this), conversationsTableModel);
+    editViewItem(ui->conversationsView, new ConversationDialog(this),
+                 SqlRelationalTableDialog::NewMode, conversationsTableModel);
+}
+
+void MainWindow::editConversation(const QModelIndex &)
+{
+    editViewItem(ui->eventsView, new EventDialog(this),
+                 SqlRelationalTableDialog::EditMode, conversationsTableModel);
 }
 
 void MainWindow::deleteConversation()
 {
-    deleteFromView(ui->conversationsView, conversationsTableModel);
+    deleteViewItem(ui->conversationsView, conversationsTableModel);
 }
 
-void MainWindow::addToView(QAbstractItemView *view, SqlRelationalTableDialog *dialog, QSqlRelationalTableModel *model)
+void MainWindow::editViewItem(QAbstractItemView *view, SqlRelationalTableDialog *dialog,
+                              SqlRelationalTableDialog::Mode mode, QSqlRelationalTableModel *model)
 {
-    // TODO set sensible row in this case
+    // TODO set sensible row in this case, find it from the view?
     int row = 0;
 
     if (!model) {
@@ -207,19 +223,21 @@ void MainWindow::addToView(QAbstractItemView *view, SqlRelationalTableDialog *di
         return;
 
     dialog->setWindowModality(Qt::WindowModal);
-    dialog->setModelRow(model, row);
+    dialog->setModelRow(model, row, mode);
     int result = dialog->exec();
     if (result == QDialog::Accepted) {
-        bool rowWasInserted = model->insertRow(row);
-        Q_ASSERT(rowWasInserted);
-        if (!rowWasInserted)
-            return;
+        if (mode == SqlRelationalTableDialog::NewMode) {
+            bool rowWasInserted = model->insertRow(row);
+            Q_ASSERT(rowWasInserted);
+            if (!rowWasInserted)
+                return;
+        }
         dialog->writeToModel();
         model->submit();
     }
 }
 
-void MainWindow::deleteFromView(QAbstractItemView *view, QSqlRelationalTableModel *model)
+void MainWindow::deleteViewItem(QAbstractItemView *view, QSqlRelationalTableModel *model)
 {
     if (!model)
         model = qobject_cast<QSqlRelationalTableModel*>(view->model());
@@ -267,14 +285,6 @@ void MainWindow::reloadEvents()
         eventsModel->select();
     if (ui->conversationsView)
         filterOnConversation(ui->conversationsView->currentIndex());
-}
-
-void MainWindow::editEvent(const QModelIndex &index)
-{
-    EventDialog *dialog = new EventDialog(this);
-    dialog->setWindowModality(Qt::WindowModal);
-    dialog->setModelRow(eventsModel, index.row());
-    dialog->show();
 }
 
 MainWindow::~MainWindow()

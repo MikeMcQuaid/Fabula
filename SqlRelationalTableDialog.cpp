@@ -10,7 +10,7 @@
 
 SqlRelationalTableDialog::SqlRelationalTableDialog(QWidget *parent) :
     QDialog(parent), m_mapper(new QDataWidgetMapper(this)), m_row(0),
-    m_model(0), m_delegate(new QSqlRelationalDelegate(this))
+    m_mode(EditMode), m_model(0), m_delegate(new QSqlRelationalDelegate(this))
 {
     m_mapper->setItemDelegate(m_delegate);
     m_mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
@@ -39,8 +39,9 @@ void SqlRelationalTableDialog::accept()
     done(QDialog::Accepted);
 }
 
-void SqlRelationalTableDialog::setModelRow(QSqlRelationalTableModel *model, int row) {
+void SqlRelationalTableDialog::setModelRow(QSqlRelationalTableModel *model, int row, Mode mode) {
     m_row = row;
+    m_mode = mode;
 
     Q_ASSERT(model);
     if (!model)
@@ -109,7 +110,8 @@ void SqlRelationalTableDialog::writeToComboBox(QComboBox *comboBox) {
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     comboBox->setModel(model);
     comboBox->setModelColumn(delegateComboBox->modelColumn());
-    comboBox->setCurrentIndex(delegateComboBox->currentIndex());
+    if (m_mode == EditMode)
+        comboBox->setCurrentIndex(delegateComboBox->currentIndex());
 
     delete delegateComboBox;
 
@@ -128,7 +130,8 @@ void SqlRelationalTableDialog::writeToLineEdit(QLineEdit *lineEdit) {
         return;
     m_delegate->setEditorData(delegateLineEdit, index);
 
-    lineEdit->setText(delegateLineEdit->text());
+    if (m_mode == EditMode)
+        lineEdit->setText(delegateLineEdit->text());
 
     delete delegateLineEdit;
 
@@ -147,7 +150,8 @@ void SqlRelationalTableDialog::writeToTextEdit(QTextEdit *textEdit) {
         return;
     m_delegate->setEditorData(delegateLineEdit, index);
 
-    textEdit->setText(delegateLineEdit->text());
+    if (m_mode == EditMode)
+        textEdit->setText(delegateLineEdit->text());
 
     delete delegateLineEdit;
 

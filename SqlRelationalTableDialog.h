@@ -17,7 +17,13 @@ class SqlRelationalTableDialog : public QDialog
 public:
     explicit SqlRelationalTableDialog(QWidget *parent = 0);
     void writeToModel();
-    void setModelRow(QSqlRelationalTableModel *model, int row);
+
+    enum Mode {
+        NewMode,
+        EditMode
+    };
+
+    void setModelRow(QSqlRelationalTableModel *model, int row, Mode mode = EditMode);
 public slots:
     void accept();
 protected slots:
@@ -36,6 +42,7 @@ protected:
 
     QDataWidgetMapper *m_mapper;
     int m_row;
+    Mode m_mode;
     QSqlRelationalTableModel *m_model;
     QSqlRelationalDelegate *m_delegate;
     QMap<int, QComboBox*> m_columnComboBox;
