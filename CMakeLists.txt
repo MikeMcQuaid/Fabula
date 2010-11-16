@@ -40,6 +40,7 @@ set(SOURCES
 	ConversationDialog.cpp
 	DialogDelegate.cpp
 	SqlRelationalTableDialog.cpp
+	SqlQueryTreeProxyModel.cpp
 )
 
 set(HEADERS
@@ -51,6 +52,7 @@ set(HEADERS
 	ConversationDialog.h
 	DialogDelegate.h
 	SqlRelationalTableDialog.h
+	SqlQueryTreeProxyModel.h
 )
 qt4_wrap_cpp(MOC_SOURCES ${HEADERS})
 
