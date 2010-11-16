@@ -9,6 +9,10 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
 
+if(CMAKE_BUILD_TYPE MATCHES "^[Rr]elease$")
+	add_definitions(-DQT_NO_DEBUG_OUTPUT)
+endif()
+
 message(STATUS "Building ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
 cmake_minimum_required(VERSION 2.8.0)
 find_package(Qt4 4.7.0 COMPONENTS QtMain QtCore QtGui QtSQL REQUIRED)
