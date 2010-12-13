@@ -117,14 +117,14 @@ bool SqlQueryTreeProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &
     QVariant rowData = sourceModel()->data(rowIndex);
     QModelIndexList indexes = sourceModel()->match(firstIndex, Qt::DisplayRole, "", -1);
     foreach(const QModelIndex &index, indexes) {
-        //qDebug() << rowData << index.row() << sourceRow;
         QVariant data = sourceModel()->data(index);
-        //qDebug() << "DATA:" << data;
-        if (rowData == data) { qDebug() << "HERE";
-            return false; }
-        if (index.row() == sourceRow) { qDebug() << "THERE";
-            break; }
+        if (index.row() == sourceRow)
+            break;
+
+        if (rowData == data) {
+            qDebug() << "HERE" << data;
+            return false;
+        }
     }
-    Q_ASSERT(false);
-    return true;
+    return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
 }
