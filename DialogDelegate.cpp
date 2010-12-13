@@ -2,7 +2,6 @@
 
 #include "ConversationDialog.h"
 #include "EventDialog.h"
-#include "SqlTreeModel.h"
 #include "SqlRelationalTableDialog.h"
 #include "Database.h"
 

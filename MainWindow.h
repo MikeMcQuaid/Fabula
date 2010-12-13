@@ -34,7 +34,7 @@ class Database;
 class QAbstractItemView;
 class QSqlRelationalTableModel;
 class SqlTreeModel;
-class SqlQueryTreeProxyModel;
+class TableToTreeProxyModel;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -67,7 +67,7 @@ private:
     QSqlRelationalTableModel *eventsModel;
     QSettings settings;
     QDesktopServices desktopServices;
-    SqlQueryTreeProxyModel *conversationsTreeModel;
+    TableToTreeProxyModel *conversationsTreeModel;
     QSqlRelationalTableModel *conversationsTableModel;
 
 };

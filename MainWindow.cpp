@@ -19,8 +19,7 @@
 #include "ui_MainWindow.h"
 
 #include "Database.h"
-#include "SqlTreeModel.h"
-#include "SqlQueryTreeProxyModel.h"
+#include "TableToTreeProxyModel.h"
 #include "PreferencesDialog.h"
 #include "ConversationDialog.h"
 #include "EventDialog.h"
@@ -92,8 +91,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->eventsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     connect(ui->eventsView, SIGNAL(activated(QModelIndex)), this, SLOT(editEvent(QModelIndex)));
 
-    conversationsTreeModel = new SqlQueryTreeProxyModel(this);
+    conversationsTreeModel = new TableToTreeProxyModel(this);
+    // TODO: use conversationsTableModel instead here
+    QSqlQueryModel *queryModel = new QSqlQueryModel(this);
+    queryModel->setQuery("select characters.name, conversations.name from events "
+                          "inner join characters on events.character_id = characters.id "
+                          "inner join conversations on events.conversation_id = conversations.id");
+    conversationsTreeModel->setSourceModel(queryModel);
     ui->conversationsView->setModel(conversationsTreeModel);
+    ui->conversationsView->sortByColumn(0, Qt::AscendingOrder);
 
     ui->conversationsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     //connect(ui->conversationsView, SIGNAL(activated(QModelIndex)), this, SLOT(editConversation(QModelIndex)));
@@ -208,16 +214,15 @@ void MainWindow::deleteConversation()
 void MainWindow::editViewItem(QAbstractItemView *view, SqlRelationalTableDialog *dialog,
                               SqlRelationalTableDialog::Mode mode, QSqlRelationalTableModel *model)
 {
-    // TODO set sensible row in this case, find it from the view?
-    int row = 0;
-
     if (!model) {
         model = qobject_cast<QSqlRelationalTableModel*>(view->model());
         Q_ASSERT(model);
         if (!model)
             return;
-        row = view->currentIndex().row();
     }
+
+    int row = view->currentIndex().row();
+    qDebug() << mode << row;
 
     Q_ASSERT(dialog);
     if (!dialog)
@@ -259,12 +264,6 @@ void MainWindow::reloadConversations()
         return;
 
     QModelIndex index = ui->conversationsView->currentIndex();
-    const QString &table = conversationsTreeModel->data(index, SqlTreeModel::TableRole).toString();
-    // TODO Only try to set new characters, not a conversation within it.
-    if (table != CharactersTable) {
-        qDebug() << table;
-        return;
-    }
 
     const QString &character = conversationsTreeModel->data(index, Qt::DisplayRole).toString();
     conversationsTreeModel->reset();

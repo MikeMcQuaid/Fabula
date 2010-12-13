@@ -34,25 +34,23 @@ set(SOURCES
 	main.cpp
 	MainWindow.cpp
 	Database.cpp
-	SqlTreeModel.cpp
 	PreferencesDialog.cpp
 	EventDialog.cpp
 	ConversationDialog.cpp
 	DialogDelegate.cpp
 	SqlRelationalTableDialog.cpp
-	SqlQueryTreeProxyModel.cpp
+	TableToTreeProxyModel.cpp
 )
 
 set(HEADERS
 	MainWindow.h
 	Database.h
-	SqlTreeModel.h
 	PreferencesDialog.h
 	EventDialog.h
 	ConversationDialog.h
 	DialogDelegate.h
 	SqlRelationalTableDialog.h
-	SqlQueryTreeProxyModel.h
+	TableToTreeProxyModel.h
 )
 qt4_wrap_cpp(MOC_SOURCES ${HEADERS})
 
