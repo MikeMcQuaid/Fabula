@@ -80,8 +80,8 @@ bool Database::create()
     databaseStructure.insert(EventsTable,
                              "id integer primary key autoincrement, "
                              "event_type_id integer not null, "
-                             "conversation_id integer not null, "
                              "character_id integer, "
+                             "conversation_id integer not null, "
                              "audiofile text unique, "
                              "text text");
 
@@ -135,12 +135,12 @@ bool Database::insertDummyData()
     insertQueries.append(insertConversationEvent.arg("1, 1, 1, 1"));
     insertQueries.append(insertConversationEvent.arg("2, 2, 2, 2"));
 
-    QString insertEvent(insert.arg(EventsTable).arg("event_type_id, conversation_id, character_id, audiofile, text"));
+    QString insertEvent(insert.arg(EventsTable).arg("event_type_id, character_id, conversation_id, audiofile, text"));
     insertQueries.append(insertEvent.arg("1, 1, 1, 1, '1.mp4', 'Hey dude, how is it going?'"));
     insertQueries.append(insertEvent.arg("2, 1, 2, 2, '2.mp3', 'Fine day today, eh?'"));
-    insertQueries.append(insertEvent.arg("3, 1, 1, 3, '3.wav', 'Is your face always that colour?'"));
-    insertQueries.append(insertEvent.arg("4, 1, 2, 4, '4.mp3', 'Why would you say that?'"));
-    insertQueries.append(insertEvent.arg("5, 1, 1, 5, '5.mp3', 'I slap your face!'"));
+    insertQueries.append(insertEvent.arg("3, 1, 3, 1, '3.wav', 'Is your face always that colour?'"));
+    insertQueries.append(insertEvent.arg("4, 1, 4, 2, '4.mp3', 'Why would you say that?'"));
+    insertQueries.append(insertEvent.arg("5, 1, 5, 1, '5.mp3', 'I slap your face!'"));
 
     QString insertConversationType(insert.arg(ConversationTypesTable).arg("name"));
     insertQueries.append(insertConversationType.arg("1, 'Interactive'"));
@@ -181,8 +181,8 @@ QMap<int, QSqlRelation> Database::tableRelations(const QLatin1String &table)
 
         QMap<int, QSqlRelation> eventsRelations;
         eventsRelations.insert(1, QSqlRelation(EventTypesTable, "id", "name"));
-        eventsRelations.insert(2, QSqlRelation(ConversationsTable, "id", "name"));
-        eventsRelations.insert(3, QSqlRelation(CharactersTable, "id", "name"));
+        eventsRelations.insert(2, QSqlRelation(CharactersTable, "id", "name"));
+        eventsRelations.insert(3, QSqlRelation(ConversationsTable, "id", "name"));
         relations.insert(EventsTable, eventsRelations);
     }
 

@@ -64,8 +64,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDelete_Conversation, SIGNAL(triggered()), this, SLOT(deleteConversation()));
     connect(ui->actionPreferences, SIGNAL(triggered()), preferences, SLOT(open()));
 
-    connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(filterOnConversation(QModelIndex)));
+    //connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
+    //        this, SLOT(filterOnConversation(QModelIndex)));
 
     eventsModel = new QSqlRelationalTableModel();
     eventsModel->setTable(EventsTable);
@@ -73,8 +73,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     eventsModel->setHeaderData(0, Qt::Horizontal, tr("ID"));
     eventsModel->setHeaderData(1, Qt::Horizontal, tr("Type"));
-    eventsModel->setHeaderData(2, Qt::Horizontal, tr("Conversation"));
-    eventsModel->setHeaderData(3, Qt::Horizontal, tr("Character"));
+    eventsModel->setHeaderData(2, Qt::Horizontal, tr("Character"));
+    eventsModel->setHeaderData(3, Qt::Horizontal, tr("Conversation"));
     eventsModel->setHeaderData(4, Qt::Horizontal, tr("Audio File"));
     eventsModel->setHeaderData(5, Qt::Horizontal, tr("Text"));
 
@@ -91,23 +91,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->eventsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     connect(ui->eventsView, SIGNAL(activated(QModelIndex)), this, SLOT(editEvent(QModelIndex)));
 
-    conversationsTreeModel = new TableToTreeProxyModel(this);
-    // TODO: use conversationsTableModel instead here
-    QSqlQueryModel *queryModel = new QSqlQueryModel(this);
-    queryModel->setQuery("select characters.name, conversations.name from events "
-                          "inner join characters on events.character_id = characters.id "
-                          "inner join conversations on events.conversation_id = conversations.id");
-    conversationsTreeModel->setSourceModel(queryModel);
-    ui->conversationsView->setModel(conversationsTreeModel);
-    ui->conversationsView->sortByColumn(0, Qt::AscendingOrder);
-
-    ui->conversationsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    //connect(ui->conversationsView, SIGNAL(activated(QModelIndex)), this, SLOT(editConversation(QModelIndex)));
-
-    connect(conversationsTreeModel, SIGNAL(submitted()), this, SLOT(reloadEvents()));
-    connect(eventsModel, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),
-            this, SLOT(reloadConversations()));
-
     conversationsTableModel = new QSqlRelationalTableModel();
     conversationsTableModel->setTable(ConversationsTable);
 
@@ -116,6 +99,22 @@ MainWindow::MainWindow(QWidget *parent) :
         conversationsTableModel->setRelation(column, conversationsRelations.value(column));
 
     conversationsTableModel->select();
+
+    conversationsTreeModel = new TableToTreeProxyModel(this);
+    QList<int> hideColumns;
+    hideColumns << 0 << 1;
+    conversationsTreeModel->setHideColumns(hideColumns);
+    conversationsTreeModel->setSourceModel(eventsModel);
+    ui->conversationsView->setModel(conversationsTreeModel);
+    ui->conversationsView->sortByColumn(0, Qt::AscendingOrder);
+
+    ui->conversationsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    //connect(ui->conversationsView, SIGNAL(activated(QModelIndex)), this, SLOT(editConversation(QModelIndex)));
+
+    // TODO: work out another way of reloading events
+    //connect(conversationsTreeModel, SIGNAL(submitted()), this, SLOT(reloadEvents()));
+    connect(eventsModel, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),
+            this, SLOT(reloadConversations()));
 }
 
 void MainWindow::newFile()
@@ -158,6 +157,7 @@ void MainWindow::openFile(QString fileName)
 
 void MainWindow::filterOnConversation(const QModelIndex& index)
 {
+    Q_ASSERT(false);
     static const int conversationRow = 2;
     static const int characterRow = 3;
 
@@ -283,8 +283,8 @@ void MainWindow::reloadEvents()
 {
     if (eventsModel)
         eventsModel->select();
-    if (ui->conversationsView)
-        filterOnConversation(ui->conversationsView->currentIndex());
+    //if (ui->conversationsView)
+    //    filterOnConversation(ui->conversationsView->currentIndex());
 }
 
 MainWindow::~MainWindow()
