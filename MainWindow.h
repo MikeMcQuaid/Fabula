@@ -50,13 +50,16 @@ public slots:
     void deleteEvent();
     void addConversation();
     void deleteConversation();
-    void editViewItem(QAbstractItemView *view, SqlRelationalTableDialog *dialog,
-                      SqlRelationalTableDialog::Mode mode, QSqlRelationalTableModel *model = 0);
-    void deleteViewItem(QAbstractItemView *view, QSqlRelationalTableModel *model = 0);
+    void editConversationItem(const QModelIndex &index, SqlRelationalTableDialog::Mode mode);
+    void editViewItem(const QModelIndex &index, SqlRelationalTableDialog *dialog,
+                      SqlRelationalTableDialog::Mode mode, QSqlRelationalTableModel *model);
+    void deleteViewItem(const QModelIndex &index, QSqlRelationalTableModel *model);
     void reloadConversations();
     void reloadEvents();
     void editEvent(const QModelIndex &index);
     void editConversation(const QModelIndex &index);
+    QModelIndex rootModelIndex(const QModelIndex &index);
+    QAbstractItemModel* rootModel(QAbstractItemModel *model);
 
 protected:
     void changeEvent(QEvent *e);

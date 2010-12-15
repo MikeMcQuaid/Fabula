@@ -70,6 +70,7 @@ MainWindow::MainWindow(QWidget *parent) :
     eventsModel->setTable(EventsTable);
     eventsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
+    // TODO: Get these columns from database
     eventsModel->setHeaderData(0, Qt::Horizontal, tr("ID"));
     eventsModel->setHeaderData(1, Qt::Horizontal, tr("Type"));
     eventsModel->setHeaderData(2, Qt::Horizontal, tr("Character"));
@@ -111,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->conversationsView->sortByColumn(0, Qt::AscendingOrder);
 
     ui->conversationsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    //connect(ui->conversationsView, SIGNAL(activated(QModelIndex)), this, SLOT(editConversation(QModelIndex)));
+    connect(ui->conversationsView, SIGNAL(activated(QModelIndex)), this, SLOT(editConversation(QModelIndex)));
 
     // TODO: work out another way of reloading events
     //connect(conversationsTreeModel, SIGNAL(submitted()), this, SLOT(reloadEvents()));
@@ -180,50 +181,82 @@ void MainWindow::filterOnConversation(const QModelIndex& index)
 
 void MainWindow::addEvent()
 {
-    editViewItem(ui->eventsView, new EventDialog(this),
-                 SqlRelationalTableDialog::NewMode);
+    QModelIndex index = ui->eventsView->currentIndex();
+    if (!index.isValid())
+        index = ui->eventsView->model()->index(0, 0);
+    editViewItem(index, new EventDialog(this),
+                 SqlRelationalTableDialog::NewMode, eventsModel);
 }
 
-void MainWindow::editEvent(const QModelIndex &)
+void MainWindow::editEvent(const QModelIndex &index)
 {
-    editViewItem(ui->eventsView, new EventDialog(this),
-                 SqlRelationalTableDialog::EditMode);
+    editViewItem(index, new EventDialog(this),
+                 SqlRelationalTableDialog::EditMode, eventsModel);
 }
 
 void MainWindow::deleteEvent()
 {
-    deleteViewItem(ui->eventsView);
+    deleteViewItem(ui->eventsView->currentIndex(), eventsModel);
 }
 
 void MainWindow::addConversation()
 {
-    editViewItem(ui->conversationsView, new ConversationDialog(this),
-                 SqlRelationalTableDialog::NewMode, conversationsTableModel);
+    QModelIndex index = ui->conversationsView->currentIndex();
+    if (!index.isValid())
+        index = ui->conversationsView->model()->index(0, 0);
+    editConversationItem(index, SqlRelationalTableDialog::NewMode);
 }
 
-void MainWindow::editConversation(const QModelIndex &)
+void MainWindow::editConversation(const QModelIndex &index)
 {
-    editViewItem(ui->eventsView, new EventDialog(this),
-                 SqlRelationalTableDialog::EditMode, conversationsTableModel);
+    editConversationItem(index, SqlRelationalTableDialog::EditMode);
+}
+
+void MainWindow::editConversationItem(const QModelIndex &index, SqlRelationalTableDialog::Mode mode)
+{
+    QModelIndex eventsTableIndex = rootModelIndex(index);
+
+    // TODO: Get columns from Database
+    // TODO: Make this work for the character too
+    const int eventsTableConversationColumn = 3;
+    const int conversationsTableNameColumn = 3;
+    QModelIndex eventsConversationIndex =
+            eventsModel->index(eventsTableIndex.row(), eventsTableConversationColumn);
+    const QString &conversation = eventsConversationIndex.data().toString();
+
+    QModelIndex firstConversation =
+            conversationsTableModel->index(0, conversationsTableNameColumn);
+    QModelIndexList conversationIndexes =
+            conversationsTableModel->match(firstConversation, Qt::DisplayRole, conversation);
+
+    Q_ASSERT(!conversationIndexes.isEmpty());
+    if (conversationIndexes.isEmpty())
+        return;
+
+    QModelIndex conversationIndex = conversationIndexes.first();
+
+    editViewItem(conversationIndex, new ConversationDialog(this),
+                 mode, conversationsTableModel);
 }
 
 void MainWindow::deleteConversation()
 {
-    deleteViewItem(ui->conversationsView, conversationsTableModel);
+    Q_ASSERT(false);
+    //deleteViewItem(ui->conversationsView->currentIndex(), conversationsTableModel);
 }
 
-void MainWindow::editViewItem(QAbstractItemView *view, SqlRelationalTableDialog *dialog,
+void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog *dialog,
                               SqlRelationalTableDialog::Mode mode, QSqlRelationalTableModel *model)
 {
-    if (!model) {
-        model = qobject_cast<QSqlRelationalTableModel*>(view->model());
-        Q_ASSERT(model);
-        if (!model)
-            return;
-    }
+    Q_ASSERT(model);
+    if (!model)
+        return;
 
-    int row = view->currentIndex().row();
-    qDebug() << mode << row;
+    const QModelIndex &rootIndex = rootModelIndex(index);
+    qDebug() << index << rootIndex;
+    Q_ASSERT(rootIndex.isValid());
+
+    const int row = rootIndex.row();
 
     Q_ASSERT(dialog);
     if (!dialog)
@@ -244,15 +277,15 @@ void MainWindow::editViewItem(QAbstractItemView *view, SqlRelationalTableDialog 
     }
 }
 
-void MainWindow::deleteViewItem(QAbstractItemView *view, QSqlRelationalTableModel *model)
+void MainWindow::deleteViewItem(const QModelIndex &index, QSqlRelationalTableModel *model)
 {
+    Q_ASSERT(model);
     if (!model)
-        model = qobject_cast<QSqlRelationalTableModel*>(view->model());
-        Q_ASSERT(model);
-        if (!model)
-            return;
+        return;
 
-    bool rowWasRemoved = model->removeRow(view->currentIndex().row());
+    const QModelIndex &rootIndex = rootModelIndex(index);
+
+    bool rowWasRemoved = model->removeRow(rootIndex.row());
     Q_ASSERT(rowWasRemoved);
     if (!rowWasRemoved)
         return;
@@ -286,6 +319,27 @@ void MainWindow::reloadEvents()
         eventsModel->select();
     //if (ui->conversationsView)
     //    filterOnConversation(ui->conversationsView->currentIndex());
+}
+
+QModelIndex MainWindow::rootModelIndex(const QModelIndex &index)
+{
+    if (!index.isValid())
+        return QModelIndex();
+
+    QModelIndex rootIndex(index);
+    const QSortFilterProxyModel *proxyModel = 0;
+    while ((proxyModel = qobject_cast<const QSortFilterProxyModel*>(rootIndex.model())))
+        rootIndex = proxyModel->mapToSource(rootIndex);
+    return rootIndex;
+}
+
+QAbstractItemModel* MainWindow::rootModel(QAbstractItemModel *model)
+{
+    QSortFilterProxyModel *proxyModel = 0;
+
+    while ((proxyModel = qobject_cast<QSortFilterProxyModel*>(model)))
+        model = proxyModel->sourceModel();
+    return model;
 }
 
 MainWindow::~MainWindow()
