@@ -23,7 +23,6 @@
 #include "PreferencesDialog.h"
 #include "ConversationDialog.h"
 #include "EventDialog.h"
-#include "DialogDelegate.h"
 
 #include <QFileDialog>
 #include <QSqlRelationalTableModel>

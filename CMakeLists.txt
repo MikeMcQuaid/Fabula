@@ -37,7 +37,6 @@ set(SOURCES
 	PreferencesDialog.cpp
 	EventDialog.cpp
 	ConversationDialog.cpp
-	DialogDelegate.cpp
 	SqlRelationalTableDialog.cpp
 	TableToTreeProxyModel.cpp
 )
@@ -48,7 +47,6 @@ set(HEADERS
 	PreferencesDialog.h
 	EventDialog.h
 	ConversationDialog.h
-	DialogDelegate.h
 	SqlRelationalTableDialog.h
 	TableToTreeProxyModel.h
 )
