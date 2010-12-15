@@ -64,8 +64,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDelete_Conversation, SIGNAL(triggered()), this, SLOT(deleteConversation()));
     connect(ui->actionPreferences, SIGNAL(triggered()), preferences, SLOT(open()));
 
-    //connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
-    //        this, SLOT(filterOnConversation(QModelIndex)));
+    connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
+            this, SLOT(filterOnConversation(QModelIndex)));
 
     eventsModel = new QSqlRelationalTableModel();
     eventsModel->setTable(EventsTable);
@@ -84,7 +84,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     eventsModel->select();
 
-    ui->eventsView->setModel(eventsModel);
+    eventsFilterModel = new QSortFilterProxyModel(this);
+    eventsFilterModel->setSourceModel(eventsModel);
+
+    ui->eventsView->setModel(eventsFilterModel);
     ui->eventsView->hideColumn(0);
     ui->eventsView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
@@ -157,24 +160,23 @@ void MainWindow::openFile(QString fileName)
 
 void MainWindow::filterOnConversation(const QModelIndex& index)
 {
-    Q_ASSERT(false);
-    static const int conversationRow = 2;
-    static const int characterRow = 3;
+    // TODO: Get these from the database
+    static const int characterRow = 2;
+    static const int conversationRow = 3;
 
-    if (!conversationsTreeModel || !eventsModel)
+    if (!eventsFilterModel)
         return;
 
-    QString filter;
+    QString filter = index.model()->data(index).toString();
     int row = 0;
+    // TODO: Do this in a less hacky fashion
     if (index.parent().isValid())
         row = conversationRow;
     else
         row = characterRow;
-    const QString name = conversationsTreeModel->data(index).toString();
-    // The "relTblAl_" is from the QSqlRelationalTableModel source.
-    // This was needed as otherwise it's not obvious how to filter without breaking relations.
-    filter = QString("relTblAl_%1.name='%2'").arg(row).arg(name);
-    eventsModel->setFilter(filter);
+
+    eventsFilterModel->setFilterKeyColumn(row);
+    eventsFilterModel->setFilterFixedString(filter);
 }
 
 void MainWindow::addEvent()

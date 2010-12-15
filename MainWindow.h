@@ -33,7 +33,7 @@ namespace Ui {
 class Database;
 class QAbstractItemView;
 class QSqlRelationalTableModel;
-class SqlTreeModel;
+class QSortFilterProxyModel;
 class TableToTreeProxyModel;
 
 class MainWindow : public QMainWindow {
@@ -65,6 +65,7 @@ private:
     Ui::MainWindow *ui;
     Database *database;
     QSqlRelationalTableModel *eventsModel;
+    QSortFilterProxyModel *eventsFilterModel;
     QSettings settings;
     QDesktopServices desktopServices;
     TableToTreeProxyModel *conversationsTreeModel;
