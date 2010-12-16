@@ -145,7 +145,6 @@ bool TableToDuplicatedTreeProxyModel::hasChildren(const QModelIndex &parent) con
 void TableToDuplicatedTreeProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
     QSortFilterProxyModel::setSourceModel(sourceModel);
-    sort(0);
 }
 
 RemoveFirstColumnDuplicatesProxyModel::RemoveFirstColumnDuplicatesProxyModel(QObject *parent)
