@@ -7,3 +7,4 @@ Makefile
 cmake_install.cmake
 moc_*.cxx
 qrc_*.cxx
+icons/*/

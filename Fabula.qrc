@@ -8,7 +8,11 @@
         <file>icons/edit-table-insert-row-under.png</file>
         <file>icons/list-add-user.png</file>
         <file>icons/list-remove-user.png</file>
-        <file>icons/irc-voice.png</file>
-        <file>icons/view-media-artist.png</file>
+        <file>icons/user-group-delete.png</file>
+        <file>icons/user-group-new.png</file>
+        <file>icons/edit-copy.png</file>
+        <file>icons/edit-paste.png</file>
+        <file>icons/help-about.png</file>
+        <file>icons/preferences-other.png</file>
     </qresource>
 </RCC>
