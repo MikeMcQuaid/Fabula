@@ -30,13 +30,17 @@
 #include <QFile>
 #include <QDebug>
 #include <QSortFilterProxyModel>
+#include <QMessageBox>
+#include <QKeyEvent>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     database(0),
     eventsModel(0),
-    conversationsTreeModel(0)
+    eventsFilterModel(0),
+    conversationsTreeModel(0),
+    conversationsTableModel(0)
 {
     ui->setupUi(this);
 
@@ -62,6 +66,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAdd_Conversation, SIGNAL(triggered()), this, SLOT(addConversation()));
     connect(ui->actionDelete_Conversation, SIGNAL(triggered()), this, SLOT(deleteConversation()));
     connect(ui->actionPreferences, SIGNAL(triggered()), preferences, SLOT(open()));
+
+    ui->conversationsView->installEventFilter(this);
+    ui->eventsView->installEventFilter(this);
 
     connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
             this, SLOT(filterOnConversation(QModelIndex)));
@@ -195,7 +202,13 @@ void MainWindow::editEvent(const QModelIndex &index)
 
 void MainWindow::deleteEvent()
 {
-    deleteViewItem(ui->eventsView->currentIndex(), eventsModel);
+    QMessageBox::StandardButton result =
+            QMessageBox::question(this,
+                                  "Delete confirmation",
+                                  "Are you sure you wish to delete the current event?",
+                                  QMessageBox::Yes | QMessageBox::No);
+    if (result == QMessageBox::Yes)
+        deleteViewItem(ui->eventsView->currentIndex(), eventsModel);
 }
 
 void MainWindow::addConversation()
@@ -241,7 +254,13 @@ void MainWindow::editConversationItem(const QModelIndex &index, SqlRelationalTab
 void MainWindow::deleteConversation()
 {
     Q_ASSERT(false);
-    //deleteViewItem(ui->conversationsView->currentIndex(), conversationsTableModel);
+    QMessageBox::StandardButton result =
+            QMessageBox::question(this,
+                                  "Delete confirmation",
+                                  "Are you sure you wish to delete the current conversation?",
+                                  QMessageBox::Yes | QMessageBox::No);
+    if (result == QMessageBox::Yes)
+        deleteViewItem(ui->conversationsView->currentIndex(), conversationsTableModel);
 }
 
 void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog *dialog,
@@ -334,14 +353,32 @@ MainWindow::~MainWindow()
     delete database;
 }
 
-void MainWindow::changeEvent(QEvent *e)
+void MainWindow::changeEvent(QEvent *event)
 {
-    QMainWindow::changeEvent(e);
-    switch (e->type()) {
+    QMainWindow::changeEvent(event);
+    switch (event->type()) {
     case QEvent::LanguageChange:
         ui->retranslateUi(this);
         break;
     default:
         break;
     }
+}
+bool MainWindow::eventFilter(QObject *object, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        // TODO: Perhaps enable backspace on OSX too?
+        if (keyEvent->matches(QKeySequence::Delete)) {
+            if (object == ui->eventsView) {
+                ui->actionDelete_Event->trigger();
+                return true;
+            }
+            if (object == ui->conversationsView) {
+                ui->actionDelete_Conversation->trigger();
+                return true;
+            }
+        }
+    }
+    return QMainWindow::eventFilter(object, event);
 }

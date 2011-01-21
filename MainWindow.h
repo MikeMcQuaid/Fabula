@@ -62,7 +62,8 @@ public slots:
     QAbstractItemModel* rootModel(QAbstractItemModel *model);
 
 protected:
-    void changeEvent(QEvent *e);
+    void changeEvent(QEvent *event);
+    bool eventFilter(QObject *object, QEvent *event);
 
 private:
     Ui::MainWindow *ui;
