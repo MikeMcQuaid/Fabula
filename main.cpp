@@ -27,6 +27,10 @@ int main(int argc, char *argv[])
     application.setOrganizationDomain(QString::fromAscii("mikemcquaid.com"));
     application.setOrganizationName(QString::fromAscii("Mike McQuaid"));
 
+#ifdef Q_WS_MAC
+    application.setAttribute(Qt::AA_DontShowIconsInMenus);
+#endif
+
     MainWindow mainWindow;
     mainWindow.show();
     return application.exec();
