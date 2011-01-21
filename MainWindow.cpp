@@ -96,6 +96,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     conversationsTableModel = new QSqlRelationalTableModel();
     conversationsTableModel->setTable(ConversationsTable);
+    conversationsTableModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
     QMap<int, QSqlRelation> conversationsRelations = database->tableRelations(ConversationsTable);
     foreach(int column, conversationsRelations.keys())
@@ -252,8 +253,9 @@ void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog
     if (!model)
         return;
 
+    Q_ASSERT(model->editStrategy() == QSqlTableModel::OnFieldChange);
+
     const QModelIndex &rootIndex = rootModelIndex(index);
-    qDebug() << index << rootIndex;
     Q_ASSERT(rootIndex.isValid());
 
     const int row = rootIndex.row();
