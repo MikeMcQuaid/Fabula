@@ -15,7 +15,6 @@ public:
     explicit TableToTreeProxyModel(QObject *parent = 0);
     void setSourceModel(QAbstractItemModel *sourceModel);
     void setHideColumns(const QList<int> &columns);
-    void reset();
 private:
     QList<int> m_hideColumns;
     RemoveFirstColumnDuplicatesProxyModel *m_removeDuplicatesModel;

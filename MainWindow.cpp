@@ -115,8 +115,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->conversationsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     connect(ui->conversationsView, SIGNAL(activated(QModelIndex)), this, SLOT(editConversation(QModelIndex)));
 
-    // TODO: work out another way of reloading events
-    //connect(conversationsTreeModel, SIGNAL(submitted()), this, SLOT(reloadEvents()));
     connect(eventsModel, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),
             this, SLOT(reloadConversations()));
 }
@@ -165,7 +163,7 @@ void MainWindow::filterOnConversation(const QModelIndex& index)
     static const int characterRow = 2;
     static const int conversationRow = 3;
 
-    if (!eventsFilterModel)
+    if (!eventsFilterModel || !index.isValid())
         return;
 
     QString filter = index.model()->data(index).toString();
@@ -296,31 +294,14 @@ void MainWindow::deleteViewItem(const QModelIndex &index, QSqlRelationalTableMod
 
 void MainWindow::reloadConversations()
 {
-    if (!conversationsTreeModel || !ui->conversationsView)
-        return;
-
-    QModelIndex index = ui->conversationsView->currentIndex();
-
-    const QString &character = conversationsTreeModel->data(index, Qt::DisplayRole).toString();
-    conversationsTreeModel->reset();
-    // Reset the index to search from the beginning of the model
-    index = conversationsTreeModel->index(0, 0);
-    QModelIndexList indexes = conversationsTreeModel->match(index, Qt::DisplayRole, character);
-
-    // TODO Re-add assert when works consistently
-    //Q_ASSERT(!indexes.isEmpty());
-    if (indexes.isEmpty())
-        return;
-
-    ui->conversationsView->setCurrentIndex(indexes.first());
+    if (conversationsTableModel)
+        conversationsTableModel->select();
 }
 
 void MainWindow::reloadEvents()
 {
     if (eventsModel)
         eventsModel->select();
-    //if (ui->conversationsView)
-    //    filterOnConversation(ui->conversationsView->currentIndex());
 }
 
 QModelIndex MainWindow::rootModelIndex(const QModelIndex &index)

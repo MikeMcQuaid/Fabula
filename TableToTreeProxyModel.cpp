@@ -28,7 +28,6 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
-    void reset();
     void setSourceModel(QAbstractItemModel *sourceModel);
 };
 
@@ -171,11 +170,6 @@ TableToTreeProxyModel::TableToTreeProxyModel(QObject *parent)
       m_tableToTreeModel(new TableToDuplicatedTreeProxyModel(m_removeDuplicatesModel)),
       m_hideColumnsModel(new HideColumnsProxyModel(m_tableToTreeModel))
 {
-}
-
-void TableToTreeProxyModel::reset()
-{
-    return QSortFilterProxyModel::reset();
 }
 
 void TableToTreeProxyModel::setHideColumns(const QList<int> &columns)

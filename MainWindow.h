@@ -73,7 +73,6 @@ private:
     QDesktopServices desktopServices;
     TableToTreeProxyModel *conversationsTreeModel;
     QSqlRelationalTableModel *conversationsTableModel;
-
 };
 
 #endif // MAINWINDOW_H
