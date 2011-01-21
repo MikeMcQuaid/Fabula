@@ -170,12 +170,14 @@
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
     <addaction name="separator"/>
-    <addaction name="actionAdd_Event"/>
-    <addaction name="actionDelete_Event"/>
-    <addaction name="separator"/>
+    <addaction name="actionAdd_Character"/>
+    <addaction name="actionDelete_Character"/>
     <addaction name="separator"/>
     <addaction name="actionAdd_Conversation"/>
     <addaction name="actionDelete_Conversation"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Event"/>
+    <addaction name="actionDelete_Event"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -205,10 +207,9 @@
    <addaction name="actionOpen"/>
    <addaction name="actionQuit"/>
    <addaction name="separator"/>
+   <addaction name="actionAdd_Character"/>
    <addaction name="actionAdd_Conversation"/>
-   <addaction name="actionDelete_Conversation"/>
    <addaction name="actionAdd_Event"/>
-   <addaction name="actionDelete_Event"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="enabled">
@@ -246,21 +247,37 @@
    </property>
   </action>
   <action name="actionCopy">
+   <property name="icon">
+    <iconset resource="Fabula.qrc">
+     <normaloff>:/icons/edit-copy.png</normaloff>:/icons/edit-copy.png</iconset>
+   </property>
    <property name="text">
     <string>Copy</string>
    </property>
   </action>
   <action name="actionPaste">
+   <property name="icon">
+    <iconset resource="Fabula.qrc">
+     <normaloff>:/icons/edit-paste.png</normaloff>:/icons/edit-paste.png</iconset>
+   </property>
    <property name="text">
     <string>Paste</string>
    </property>
   </action>
   <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="Fabula.qrc">
+     <normaloff>:/icons/help-about.png</normaloff>:/icons/help-about.png</iconset>
+   </property>
    <property name="text">
     <string>About</string>
    </property>
   </action>
   <action name="actionPreferences">
+   <property name="icon">
+    <iconset resource="Fabula.qrc">
+     <normaloff>:/icons/preferences-other.png</normaloff>:/icons/preferences-other.png</iconset>
+   </property>
    <property name="text">
     <string>Preferences</string>
    </property>
@@ -292,7 +309,7 @@
   <action name="actionAdd_Conversation">
    <property name="icon">
     <iconset resource="Fabula.qrc">
-     <normaloff>:/icons/list-add-user.png</normaloff>:/icons/list-add-user.png</iconset>
+     <normaloff>:/icons/user-group-new.png</normaloff>:/icons/user-group-new.png</iconset>
    </property>
    <property name="text">
     <string>Add Conversation</string>
@@ -302,12 +319,33 @@
    </property>
   </action>
   <action name="actionDelete_Conversation">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Fabula.qrc">
+     <normaloff>:/icons/user-group-delete.png</normaloff>:/icons/user-group-delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete Conversation</string>
+   </property>
+  </action>
+  <action name="actionAdd_Character">
+   <property name="icon">
+    <iconset resource="Fabula.qrc">
+     <normaloff>:/icons/list-add-user.png</normaloff>:/icons/list-add-user.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add Character</string>
+   </property>
+  </action>
+  <action name="actionDelete_Character">
    <property name="icon">
     <iconset resource="Fabula.qrc">
      <normaloff>:/icons/list-remove-user.png</normaloff>:/icons/list-remove-user.png</iconset>
    </property>
    <property name="text">
-    <string>Delete Conversation</string>
+    <string>Delete Character</string>
    </property>
   </action>
  </widget>
