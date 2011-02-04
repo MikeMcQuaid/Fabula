@@ -16,7 +16,6 @@ public:
     ~ConversationDialog();
 
 private:
-    QPushButton* okButton();
     Ui::ConversationDialog *ui;
 };
 

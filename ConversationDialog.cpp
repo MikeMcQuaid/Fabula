@@ -4,7 +4,7 @@
 #include <QAbstractItemModel>
 
 // TODO Get the columns from the Database class
-enum EventColumn {
+enum ConversationsColumn {
     IDColumn = 0,
     TypeColumn = 1,
     WriterColumn = 2,
@@ -22,11 +22,6 @@ ConversationDialog::ConversationDialog(QWidget *parent) :
     m_columnLineEdit.insert(NameColumn, ui->nameLineEdit);
 
     setupWidgets();
-}
-
-QPushButton* ConversationDialog::okButton()
-{
-    return ui->buttonBox->button(QDialogButtonBox::Ok);
 }
 
 ConversationDialog::~ConversationDialog()

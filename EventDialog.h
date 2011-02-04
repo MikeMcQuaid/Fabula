@@ -24,7 +24,6 @@ private slots:
     void chooseAudioFile();
 
 private:
-    QPushButton* okButton();
     Ui::EventDialog *ui;
 };
 

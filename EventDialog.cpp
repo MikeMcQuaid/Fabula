@@ -10,7 +10,7 @@
 #include <QFileDialog>
 
 // TODO Get the columns from the Database class
-enum EventColumn {
+enum EventsColumn {
     IDColumn = 0,
     TypeColumn = 1,
     CharacterColumn = 2,
@@ -49,11 +49,6 @@ void EventDialog::chooseAudioFile()
         return;
 
     ui->audioFileLineEdit->setText(audioFile);
-}
-
-QPushButton* EventDialog::okButton()
-{
-    return ui->buttonBox->button(QDialogButtonBox::Ok);
 }
 
 EventDialog::~EventDialog()

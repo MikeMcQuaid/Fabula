@@ -7,10 +7,12 @@
 #include <QSqlRelationalDelegate>
 #include <QTextEdit>
 #include <QDataWidgetMapper>
+#include <QDialogButtonBox>
 
 SqlRelationalTableDialog::SqlRelationalTableDialog(QWidget *parent) :
     QDialog(parent), m_mapper(new QDataWidgetMapper(this)), m_row(0),
-    m_mode(EditMode), m_model(0), m_delegate(new QSqlRelationalDelegate(this))
+    m_mode(EditMode), m_model(0), m_delegate(new QSqlRelationalDelegate(this)),
+    m_okButton(0)
 {
     m_mapper->setItemDelegate(m_delegate);
     m_mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
@@ -18,6 +20,11 @@ SqlRelationalTableDialog::SqlRelationalTableDialog(QWidget *parent) :
 
 void SqlRelationalTableDialog::setupWidgets()
 {
+    QList<QDialogButtonBox*> buttonBoxes = findChildren<QDialogButtonBox*>();
+    Q_ASSERT(!buttonBoxes.isEmpty());
+    if (!buttonBoxes.isEmpty())
+        m_okButton = buttonBoxes.first()->button(QDialogButtonBox::Ok);
+
     foreach(QComboBox *comboBox, m_columnComboBox) {
         connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(checkWriteReady()));
         connect(comboBox, SIGNAL(editTextChanged(QString)), this, SLOT(checkWriteReady()));
@@ -202,31 +209,30 @@ void SqlRelationalTableDialog::writeFromTextEdit(QTextEdit *textEdit) {
 }
 
 void SqlRelationalTableDialog::checkWriteReady() {
-    QPushButton *ok = okButton();
-    Q_ASSERT(ok);
-    if (!ok)
+    Q_ASSERT(m_okButton);
+    if (!m_okButton)
         return;
 
     foreach(QComboBox *comboBox, m_columnComboBox) {
         if (comboBox->currentIndex() == -1 || comboBox->currentText().isEmpty()) {
-            ok->setEnabled(false);
+            m_okButton->setEnabled(false);
             return;
         }
     }
 
     foreach(QLineEdit *lineEdit, m_columnLineEdit) {
         if (lineEdit->text().isEmpty()) {
-            ok->setEnabled(false);
+            m_okButton->setEnabled(false);
             return;
         }
     }
 
     foreach(QTextEdit *textEdit, m_columnTextEdit) {
         if (textEdit->toPlainText().isEmpty()) {
-            ok->setEnabled(false);
+            m_okButton->setEnabled(false);
             return;
         }
     }
 
-    ok->setEnabled(true);
+    m_okButton->setEnabled(true);
 }
