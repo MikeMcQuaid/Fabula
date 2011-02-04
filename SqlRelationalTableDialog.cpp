@@ -102,10 +102,8 @@ void SqlRelationalTableDialog::writeToComboBox(QComboBox *comboBox) {
     QWidget *delegateWidget = m_delegate->createEditor(this, QStyleOptionViewItem(), index);
     QComboBox *delegateComboBox = qobject_cast<QComboBox*>(delegateWidget);
     Q_ASSERT(delegateComboBox);
-    if (!delegateComboBox) {
-        qDebug() << delegateWidget->metaObject()->className();
+    if (!delegateComboBox)
         return;
-    }
     m_delegate->setEditorData(delegateComboBox, index);
 
     QAbstractItemModel *abstractModel = delegateComboBox->model();
