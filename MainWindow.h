@@ -50,7 +50,7 @@ public slots:
     void deleteEvent();
     void addConversation();
     void deleteConversation();
-    void editConversationItem(const QModelIndex &index, SqlRelationalTableDialog::Mode mode);
+    void editConversationItem(SqlRelationalTableDialog::Mode mode, const QModelIndex &index);
     void editViewItem(const QModelIndex &index, SqlRelationalTableDialog *dialog,
                       SqlRelationalTableDialog::Mode mode, QSqlRelationalTableModel *model);
     void deleteViewItem(const QModelIndex &index, QSqlRelationalTableModel *model);

@@ -216,15 +216,15 @@ void MainWindow::addConversation()
     QModelIndex index = ui->conversationsView->currentIndex();
     if (!index.isValid())
         index = ui->conversationsView->model()->index(0, 0);
-    editConversationItem(index, SqlRelationalTableDialog::NewMode);
+    editConversationItem(SqlRelationalTableDialog::NewMode, index);
 }
 
 void MainWindow::editConversation(const QModelIndex &index)
 {
-    editConversationItem(index, SqlRelationalTableDialog::EditMode);
+    editConversationItem(SqlRelationalTableDialog::EditMode, index);
 }
 
-void MainWindow::editConversationItem(const QModelIndex &index, SqlRelationalTableDialog::Mode mode)
+void MainWindow::editConversationItem(SqlRelationalTableDialog::Mode mode, const QModelIndex &index)
 {
     QModelIndex eventsTableIndex = rootModelIndex(index);
 
