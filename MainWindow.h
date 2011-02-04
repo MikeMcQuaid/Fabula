@@ -42,6 +42,11 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    enum TreeItem {
+        CharacterItem,
+        ConversationItem
+    };
+
 public slots:
     void newFile();
     void openFile(QString fileName = QString());
@@ -50,14 +55,20 @@ public slots:
     void deleteEvent();
     void addConversation();
     void deleteConversation();
-    void editConversationItem(SqlRelationalTableDialog::Mode mode, const QModelIndex &index);
-    void editViewItem(const QModelIndex &index, SqlRelationalTableDialog *dialog,
-                      SqlRelationalTableDialog::Mode mode, QSqlRelationalTableModel *model);
+    void addCharacter();
+    void deleteCharacter();
+    void addOrEditTreeItem(SqlRelationalTableDialog::Mode mode, TreeItem treeItem,
+                           const QModelIndex &index = QModelIndex());
+    void editViewItem(const QModelIndex &index,
+                      SqlRelationalTableDialog *dialog,
+                      SqlRelationalTableDialog::Mode mode,
+                      QSqlRelationalTableModel *model,
+                      QSqlRelationalTableModel *reloadModel = 0);
     void deleteViewItem(const QModelIndex &index, QSqlRelationalTableModel *model);
-    void reloadConversations();
+    void reloadTree();
     void reloadEvents();
     void editEvent(const QModelIndex &index);
-    void editConversation(const QModelIndex &index);
+    void editTreeItem(const QModelIndex &index);
     QModelIndex rootModelIndex(const QModelIndex &index);
     QAbstractItemModel* rootModel(QAbstractItemModel *model);
 
@@ -74,6 +85,7 @@ private:
     QDesktopServices desktopServices;
     TableToTreeProxyModel *conversationsTreeModel;
     QSqlRelationalTableModel *conversationsTableModel;
+    QSqlRelationalTableModel *charactersTableModel;
 };
 
 #endif // MAINWINDOW_H

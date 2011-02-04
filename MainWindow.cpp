@@ -22,6 +22,7 @@
 #include "TableToTreeProxyModel.h"
 #include "PreferencesDialog.h"
 #include "ConversationDialog.h"
+#include "CharacterDialog.h"
 #include "EventDialog.h"
 
 #include <QFileDialog>
@@ -40,7 +41,8 @@ MainWindow::MainWindow(QWidget *parent) :
     eventsModel(0),
     eventsFilterModel(0),
     conversationsTreeModel(0),
-    conversationsTableModel(0)
+    conversationsTableModel(0),
+    charactersTableModel(0)
 {
     ui->setupUi(this);
 
@@ -65,6 +67,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDelete_Event, SIGNAL(triggered()), this, SLOT(deleteEvent()));
     connect(ui->actionAdd_Conversation, SIGNAL(triggered()), this, SLOT(addConversation()));
     connect(ui->actionDelete_Conversation, SIGNAL(triggered()), this, SLOT(deleteConversation()));
+    connect(ui->actionAdd_Character, SIGNAL(triggered()), this, SLOT(addCharacter()));
+    connect(ui->actionDelete_Character, SIGNAL(triggered()), this, SLOT(deleteCharacter()));
     connect(ui->actionPreferences, SIGNAL(triggered()), preferences, SLOT(open()));
 
     ui->conversationsView->installEventFilter(this);
@@ -111,6 +115,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     conversationsTableModel->select();
 
+    charactersTableModel = new QSqlRelationalTableModel();
+    charactersTableModel->setTable(CharactersTable);
+    charactersTableModel->setEditStrategy(QSqlTableModel::OnFieldChange);
+    charactersTableModel->select();
+
     conversationsTreeModel = new TableToTreeProxyModel(this);
     QList<int> hideColumns;
     hideColumns << 0 << 1;
@@ -120,10 +129,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->conversationsView->sortByColumn(0, Qt::AscendingOrder);
 
     ui->conversationsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    connect(ui->conversationsView, SIGNAL(activated(QModelIndex)), this, SLOT(editConversation(QModelIndex)));
-
-    connect(eventsModel, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),
-            this, SLOT(reloadConversations()));
+    connect(ui->conversationsView, SIGNAL(activated(QModelIndex)), this, SLOT(editTreeItem(QModelIndex)));
 }
 
 void MainWindow::newFile()
@@ -152,7 +158,7 @@ void MainWindow::openFile(QString fileName)
         }
         database = new Database(fileName);
         settings.setValue("database", fileName);
-        reloadConversations();
+        reloadTree();
         reloadEvents();
         setWindowTitle(QString("%1 - Fabula").arg(fileName));
         ui->centralWidget->setEnabled(true);
@@ -213,42 +219,65 @@ void MainWindow::deleteEvent()
 
 void MainWindow::addConversation()
 {
-    QModelIndex index = ui->conversationsView->currentIndex();
-    if (!index.isValid())
-        index = ui->conversationsView->model()->index(0, 0);
-    editConversationItem(SqlRelationalTableDialog::NewMode, index);
+    addOrEditTreeItem(SqlRelationalTableDialog::NewMode, ConversationItem);
 }
 
-void MainWindow::editConversation(const QModelIndex &index)
+void MainWindow::editTreeItem(const QModelIndex &index)
 {
-    editConversationItem(SqlRelationalTableDialog::EditMode, index);
+    TreeItem treeItem = CharacterItem;
+
+    // TODO: Make this less hacky
+    if (index.parent().isValid())
+        treeItem = ConversationItem;
+
+    addOrEditTreeItem(SqlRelationalTableDialog::EditMode, treeItem, index);
 }
 
-void MainWindow::editConversationItem(SqlRelationalTableDialog::Mode mode, const QModelIndex &index)
+void MainWindow::addCharacter()
 {
-    QModelIndex eventsTableIndex = rootModelIndex(index);
+    addOrEditTreeItem(SqlRelationalTableDialog::NewMode, CharacterItem);
+}
 
-    // TODO: Get columns from Database
-    // TODO: Make this work for the character too
-    const int eventsTableConversationColumn = 3;
-    const int conversationsTableNameColumn = 3;
-    QModelIndex eventsConversationIndex =
-            eventsModel->index(eventsTableIndex.row(), eventsTableConversationColumn);
-    const QString &conversation = eventsConversationIndex.data().toString();
+void MainWindow::addOrEditTreeItem(SqlRelationalTableDialog::Mode mode, TreeItem treeItem, const QModelIndex &index)
+{
+    const int eventsTableRow = rootModelIndex(index).row();
+    int eventsTableColumn = -1;
+    int itemTableNameColumn = -1;
+    QSqlRelationalTableModel *tableModel = 0;
+    SqlRelationalTableDialog *tableDialog = 0;
 
-    QModelIndex firstConversation =
-            conversationsTableModel->index(0, conversationsTableNameColumn);
-    QModelIndexList conversationIndexes =
-            conversationsTableModel->match(firstConversation, Qt::DisplayRole, conversation);
+    switch (treeItem) {
+        case CharacterItem:
+        eventsTableColumn = 2;
+        itemTableNameColumn = 1;
+        tableModel = charactersTableModel;
+        tableDialog = new CharacterDialog(this);
+        break;
 
-    Q_ASSERT(!conversationIndexes.isEmpty());
-    if (conversationIndexes.isEmpty())
+    case ConversationItem:
+        eventsTableColumn = 3;
+        itemTableNameColumn = 3;
+        tableModel = conversationsTableModel;
+        tableDialog = new ConversationDialog(this);
+        break;
+    }
+
+    QModelIndex eventsIndex =
+            eventsModel->index(eventsTableRow, eventsTableColumn);
+    const QString &conversation = eventsIndex.data().toString();
+
+    QModelIndex firstItem =
+            tableModel->index(0, itemTableNameColumn);
+    QModelIndexList itemIndexes =
+            tableModel->match(firstItem, Qt::DisplayRole, conversation);
+
+    Q_ASSERT(!itemIndexes.isEmpty());
+    if (itemIndexes.isEmpty())
         return;
 
-    QModelIndex conversationIndex = conversationIndexes.first();
+    QModelIndex itemIndex = itemIndexes.first();
 
-    editViewItem(conversationIndex, new ConversationDialog(this),
-                 mode, conversationsTableModel);
+    editViewItem(itemIndex, tableDialog, mode, tableModel, eventsModel);
 }
 
 void MainWindow::deleteConversation()
@@ -263,8 +292,21 @@ void MainWindow::deleteConversation()
         deleteViewItem(ui->conversationsView->currentIndex(), conversationsTableModel);
 }
 
+void MainWindow::deleteCharacter()
+{
+    Q_ASSERT(false);
+    QMessageBox::StandardButton result =
+            QMessageBox::question(this,
+                                  "Delete confirmation",
+                                  "Are you sure you wish to delete the current character?",
+                                  QMessageBox::Yes | QMessageBox::No);
+    if (result == QMessageBox::Yes)
+        deleteViewItem(ui->conversationsView->currentIndex(), charactersTableModel);
+}
+
 void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog *dialog,
-                              SqlRelationalTableDialog::Mode mode, QSqlRelationalTableModel *model)
+                              SqlRelationalTableDialog::Mode mode, QSqlRelationalTableModel *model,
+                              QSqlRelationalTableModel *reloadModel)
 {
     Q_ASSERT(model);
     if (!model)
@@ -293,6 +335,8 @@ void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog
         }
         dialog->writeToModel();
         model->submit();
+        if (reloadModel)
+            reloadModel->select();
     }
 }
 
@@ -311,8 +355,10 @@ void MainWindow::deleteViewItem(const QModelIndex &index, QSqlRelationalTableMod
     model->submit();
 }
 
-void MainWindow::reloadConversations()
+void MainWindow::reloadTree()
 {
+    if (charactersTableModel)
+        charactersTableModel->select();
     if (conversationsTableModel)
         conversationsTableModel->select();
 }
