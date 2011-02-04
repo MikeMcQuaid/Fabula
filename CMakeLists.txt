@@ -37,6 +37,7 @@ set(SOURCES
 	PreferencesDialog.cpp
 	EventDialog.cpp
 	ConversationDialog.cpp
+	CharacterDialog.cpp
 	SqlRelationalTableDialog.cpp
 	TableToTreeProxyModel.cpp
 )
@@ -47,6 +48,7 @@ set(HEADERS
 	PreferencesDialog.h
 	EventDialog.h
 	ConversationDialog.h
+	CharacterDialog.h
 	SqlRelationalTableDialog.h
 	TableToTreeProxyModel.h
 )
@@ -57,6 +59,7 @@ set(FORMS
 	PreferencesDialog.ui
 	EventDialog.ui
 	ConversationDialog.ui
+	CharacterDialog.ui
 )
 qt4_wrap_ui(FORMS_SOURCES ${FORMS})
 
