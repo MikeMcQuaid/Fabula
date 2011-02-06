@@ -5,10 +5,12 @@
 
 #include "SqlRelationalTableDialog.h"
 
-class QPsuhButton;
-
 namespace Ui {
     class EventDialog;
+}
+
+namespace Phonon {
+    class MediaObject;
 }
 
 class EventDialog : public SqlRelationalTableDialog
@@ -23,9 +25,11 @@ private slots:
     void changedEventType(const QString &eventType);
     void chooseAudioFile();
     void playAudioFile();
+    void audioFileChanged(const QString &audioFile);
 
 private:
     Ui::EventDialog *ui;
+    Phonon::MediaObject *audioFilePlayer;
 };
 
 #endif // EVENTDIALOG_H

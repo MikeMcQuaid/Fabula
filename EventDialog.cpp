@@ -21,7 +21,7 @@ enum EventsColumn {
 };
 
 EventDialog::EventDialog(QWidget *parent) :
-    SqlRelationalTableDialog(parent), ui(new Ui::EventDialog)
+    SqlRelationalTableDialog(parent), ui(new Ui::EventDialog), audioFilePlayer(0)
 {
     ui->setupUi(this);
 
@@ -34,8 +34,13 @@ EventDialog::EventDialog(QWidget *parent) :
     connect(ui->typeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(changedEventType(QString)));
     connect(ui->audioFileBrowseButton, SIGNAL(clicked()), this, SLOT(chooseAudioFile()));
     connect(ui->audioFilePlayButton, SIGNAL(clicked()), this, SLOT(playAudioFile()));
+    connect(ui->audioFileLineEdit, SIGNAL(textChanged(QString)), this, SLOT(audioFileChanged(QString)));
 
     setupWidgets();
+
+    audioFilePlayer = new Phonon::MediaObject(this);
+    Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
+    Phonon::createPath(audioFilePlayer, audioOutput);
 }
 
 void EventDialog::changedEventType(const QString &eventType)
@@ -51,11 +56,17 @@ void EventDialog::chooseAudioFile()
         return;
 
     ui->audioFileLineEdit->setText(audioFile);
+    audioFilePlayer->setCurrentSource(audioFile);
+}
+
+void EventDialog::audioFileChanged(const QString &audioFile)
+{
+    audioFilePlayer->setCurrentSource(audioFile);
 }
 
 void EventDialog::playAudioFile()
 {
-    Phonon::createPlayer(Phonon::MusicCategory, ui->audioFileLineEdit->text())->play();
+    audioFilePlayer->play();
 }
 
 EventDialog::~EventDialog()
