@@ -112,6 +112,7 @@ void SqlRelationalTableDialog::writeToComboBox(QComboBox *comboBox) {
     if (!model)
         return;
 
+    model->select();
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     comboBox->setModel(model);
     comboBox->setModelColumn(delegateComboBox->modelColumn());
