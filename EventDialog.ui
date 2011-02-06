@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>402</width>
-    <height>357</height>
+    <width>419</width>
+    <height>481</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,6 +36,20 @@
          <widget class="QComboBox" name="typeComboBox">
           <property name="editable">
            <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="characterLabel">
+          <property name="text">
+           <string>Character</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="characterComboBox">
+          <property name="editable">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -70,7 +84,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="audioFilePushButton">
+           <widget class="QPushButton" name="audioFileBrowseButton">
             <property name="text">
              <string>...</string>
             </property>
@@ -79,21 +93,14 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="audioFilePlayButton">
+            <property name="text">
+             <string>Play</string>
+            </property>
+           </widget>
+          </item>
          </layout>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="characterLabel">
-          <property name="text">
-           <string>Character</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QComboBox" name="characterComboBox">
-          <property name="editable">
-           <bool>true</bool>
-          </property>
-         </widget>
         </item>
        </layout>
       </item>
