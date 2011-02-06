@@ -78,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(filterOnConversation(QModelIndex)));
 
     eventsModel = new QSqlRelationalTableModel();
+    eventsModel->setObjectName("eventsModel");
     eventsModel->setTable(EventsTable);
     eventsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
@@ -96,6 +97,7 @@ MainWindow::MainWindow(QWidget *parent) :
     eventsModel->select();
 
     eventsFilterModel = new QSortFilterProxyModel(this);
+    eventsFilterModel->setObjectName("eventsFilterModel");
     eventsFilterModel->setSourceModel(eventsModel);
 
     ui->eventsView->setModel(eventsFilterModel);
@@ -106,6 +108,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->eventsView, SIGNAL(activated(QModelIndex)), this, SLOT(editEvent(QModelIndex)));
 
     conversationsTableModel = new QSqlRelationalTableModel();
+    conversationsTableModel->setObjectName("conversationsTableModel");
     conversationsTableModel->setTable(ConversationsTable);
     conversationsTableModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
@@ -116,11 +119,13 @@ MainWindow::MainWindow(QWidget *parent) :
     conversationsTableModel->select();
 
     charactersTableModel = new QSqlRelationalTableModel();
+    charactersTableModel->setObjectName("charactersTableModel");
     charactersTableModel->setTable(CharactersTable);
     charactersTableModel->setEditStrategy(QSqlTableModel::OnFieldChange);
     charactersTableModel->select();
 
     conversationsTreeModel = new TableToTreeProxyModel(this);
+    conversationsTreeModel->setObjectName("conversationsTreeModel");
     QList<int> hideColumns;
     hideColumns << 0 << 1;
     conversationsTreeModel->setHideColumns(hideColumns);
