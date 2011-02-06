@@ -8,6 +8,7 @@
 #include <QSqlRelationalTableModel>
 #include <QTableView>
 #include <QFileDialog>
+#include <Phonon>
 
 // TODO Get the columns from the Database class
 enum EventsColumn {
@@ -31,7 +32,8 @@ EventDialog::EventDialog(QWidget *parent) :
     m_columnTextEdit.insert(TextColumn, ui->textEdit);
 
     connect(ui->typeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(changedEventType(QString)));
-    connect(ui->audioFilePushButton, SIGNAL(clicked()), this, SLOT(chooseAudioFile()));
+    connect(ui->audioFileBrowseButton, SIGNAL(clicked()), this, SLOT(chooseAudioFile()));
+    connect(ui->audioFilePlayButton, SIGNAL(clicked()), this, SLOT(playAudioFile()));
 
     setupWidgets();
 }
@@ -49,6 +51,11 @@ void EventDialog::chooseAudioFile()
         return;
 
     ui->audioFileLineEdit->setText(audioFile);
+}
+
+void EventDialog::playAudioFile()
+{
+    Phonon::createPlayer(Phonon::MusicCategory, ui->audioFileLineEdit->text())->play();
 }
 
 EventDialog::~EventDialog()

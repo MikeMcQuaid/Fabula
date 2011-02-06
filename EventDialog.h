@@ -22,6 +22,7 @@ public:
 private slots:
     void changedEventType(const QString &eventType);
     void chooseAudioFile();
+    void playAudioFile();
 
 private:
     Ui::EventDialog *ui;
