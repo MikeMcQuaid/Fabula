@@ -8,6 +8,7 @@
 #include <QTextEdit>
 #include <QDataWidgetMapper>
 #include <QDialogButtonBox>
+#include <QSqlError>
 
 SqlRelationalTableDialog::SqlRelationalTableDialog(QWidget *parent) :
     QDialog(parent), m_mapper(new QDataWidgetMapper(this)), m_row(0),
@@ -56,9 +57,10 @@ void SqlRelationalTableDialog::setModelRow(QSqlRelationalTableModel *model, int 
 
     m_model = model;
     m_mapper->setModel(model);
-    m_mapper->setCurrentIndex(row);
 
     writeToWidgets();
+
+    m_mapper->setCurrentIndex(row);
 }
 
 void SqlRelationalTableDialog::writeToModel() {
@@ -78,6 +80,7 @@ void SqlRelationalTableDialog::writeToWidgets() {
 }
 
 void SqlRelationalTableDialog::writeFromWidgets() {
+#if 0
     foreach(QComboBox *comboBox, m_columnComboBox)
         writeFromComboBox(comboBox);
 
@@ -86,82 +89,40 @@ void SqlRelationalTableDialog::writeFromWidgets() {
 
     foreach(QTextEdit *textEdit, m_columnTextEdit)
         writeFromTextEdit(textEdit);
+#endif
+
+    qDebug() << "DataWidgetMapper:";
+    qDebug() << m_mapper->currentIndex();
+
+    bool submitted = m_mapper->submit();
+    if (!submitted) {
+        qDebug() << "DataWidgetMapper failed:";
+        qDebug() << m_mapper->currentIndex();
+        qDebug() << m_model->lastError();
+    }
+    //Q_ASSERT(submitted);
 }
 
 void SqlRelationalTableDialog::writeToComboBox(QComboBox *comboBox) {
-    Q_ASSERT(comboBox);
-    if (!comboBox)
-        return;
-
     const int comboBoxColumn = m_columnComboBox.key(comboBox);
-    QModelIndex index = m_model->index(m_row, comboBoxColumn);
-    Q_ASSERT(index.isValid());
-    if (!index.isValid())
-        return;
-
-    QWidget *delegateWidget = m_delegate->createEditor(this, QStyleOptionViewItem(), index);
-    QComboBox *delegateComboBox = qobject_cast<QComboBox*>(delegateWidget);
-    Q_ASSERT(delegateComboBox);
-    if (!delegateComboBox)
-        return;
-    m_delegate->setEditorData(delegateComboBox, index);
-
-    QAbstractItemModel *abstractModel = delegateComboBox->model();
-    QSqlTableModel *model = qobject_cast<QSqlTableModel*>(abstractModel);
-    Q_ASSERT(model);
-    if (!model)
-        return;
-
-    model->select();
-    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
-    comboBox->setModel(model);
-    comboBox->setModelColumn(delegateComboBox->modelColumn());
-    if (m_mode == EditMode)
-        comboBox->setCurrentIndex(delegateComboBox->currentIndex());
-
-    delete delegateComboBox;
-
+    // This workaround is needed because QDataWidgetMapper doesn't handle
+    // QSqlRelationalTableModels properly yet.
+    QSqlTableModel *relationModel = m_model->relationModel(comboBoxColumn);
+    const QString &relationColumnName = m_model->relation(comboBoxColumn).displayColumn();
+    int relationColumn = relationModel->fieldIndex(relationColumnName);
+    comboBox->setModel(relationModel);
+    comboBox->setModelColumn(relationColumn);
     //m_mapper->addMapping(comboBox, comboBoxColumn);
 }
 
 void SqlRelationalTableDialog::writeToLineEdit(QLineEdit *lineEdit) {
     const int lineEditColumn = m_columnLineEdit.key(lineEdit);
-    QModelIndex index = m_model->index(m_row, lineEditColumn);
-    if (!index.isValid())
-        return;
-    QWidget *delegateWidget = m_delegate->createEditor(this, QStyleOptionViewItem(), index);
-    QLineEdit *delegateLineEdit = qobject_cast<QLineEdit*>(delegateWidget);
-    Q_ASSERT(delegateLineEdit);
-    if (!delegateLineEdit)
-        return;
-    m_delegate->setEditorData(delegateLineEdit, index);
-
-    if (m_mode == EditMode)
-        lineEdit->setText(delegateLineEdit->text());
-
-    delete delegateLineEdit;
-
-    //m_mapper->addMapping(lineEdit, lineEditColumn);
+    m_mapper->addMapping(lineEdit, lineEditColumn);
 }
 
 void SqlRelationalTableDialog::writeToTextEdit(QTextEdit *textEdit) {
     const int textEditColumn = m_columnTextEdit.key(textEdit);
-    QModelIndex index = m_model->index(m_row, textEditColumn);
-    if (!index.isValid())
-        return;
-    QWidget *delegateWidget = m_delegate->createEditor(this, QStyleOptionViewItem(), index);
-    QLineEdit *delegateLineEdit = qobject_cast<QLineEdit*>(delegateWidget);
-    Q_ASSERT(delegateLineEdit);
-    if (!delegateLineEdit)
-        return;
-    m_delegate->setEditorData(delegateLineEdit, index);
-
-    if (m_mode == EditMode)
-        textEdit->setText(delegateLineEdit->text());
-
-    delete delegateLineEdit;
-
-    //m_mapper->addMapping(textEdit, textEditColumn);
+    m_mapper->addMapping(textEdit, textEditColumn, "plainText");
 }
 
 void SqlRelationalTableDialog::writeFromComboBox(QComboBox *comboBox) {
@@ -190,20 +151,20 @@ void SqlRelationalTableDialog::writeFromComboBox(QComboBox *comboBox) {
 
     const int comboBoxColumn = m_columnComboBox.key(comboBox);
     const QModelIndex index = m_model->index(m_row, comboBoxColumn);
-    m_delegate->setModelData(comboBox, m_model, index);
+    //m_delegate->setModelData(comboBox, m_model, index);
 }
 
 void SqlRelationalTableDialog::writeFromLineEdit(QLineEdit *lineEdit) {
     const int lineEditColumn = m_columnLineEdit.key(lineEdit);
     const QModelIndex index = m_model->index(m_row, lineEditColumn);
-    m_delegate->setModelData(lineEdit, m_model, index);
+    //m_delegate->setModelData(lineEdit, m_model, index);
 }
 
 void SqlRelationalTableDialog::writeFromTextEdit(QTextEdit *textEdit) {
     QLineEdit *lineEdit = new QLineEdit(textEdit->toPlainText(), this);
     const int textEditColumn = m_columnTextEdit.key(textEdit);
     const QModelIndex index = m_model->index(m_row, textEditColumn);
-    m_delegate->setModelData(lineEdit, m_model, index);
+    //m_delegate->setModelData(lineEdit, m_model, index);
     delete lineEdit;
 }
 
@@ -211,6 +172,9 @@ void SqlRelationalTableDialog::checkWriteReady() {
     Q_ASSERT(m_okButton);
     if (!m_okButton)
         return;
+
+    m_okButton->setEnabled(true);
+    return;
 
     foreach(QComboBox *comboBox, m_columnComboBox) {
         if (comboBox->currentIndex() == -1 || comboBox->currentText().isEmpty()) {

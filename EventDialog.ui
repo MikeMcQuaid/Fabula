@@ -79,7 +79,7 @@
           <item>
            <widget class="QLineEdit" name="audioFileLineEdit">
             <property name="readOnly">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
            </widget>
           </item>

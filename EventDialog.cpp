@@ -38,9 +38,9 @@ EventDialog::EventDialog(QWidget *parent) :
 
     setupWidgets();
 
-    audioFilePlayer = new Phonon::MediaObject(this);
-    Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
-    Phonon::createPath(audioFilePlayer, audioOutput);
+    //audioFilePlayer = new Phonon::MediaObject(this);
+    //Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
+    //Phonon::createPath(audioFilePlayer, audioOutput);
 }
 
 void EventDialog::changedEventType(const QString &eventType)
@@ -56,12 +56,14 @@ void EventDialog::chooseAudioFile()
         return;
 
     ui->audioFileLineEdit->setText(audioFile);
-    audioFilePlayer->setCurrentSource(audioFile);
+    if (audioFilePlayer)
+        audioFilePlayer->setCurrentSource(audioFile);
 }
 
 void EventDialog::audioFileChanged(const QString &audioFile)
 {
-    audioFilePlayer->setCurrentSource(audioFile);
+    if (audioFilePlayer)
+        audioFilePlayer->setCurrentSource(audioFile);
 }
 
 void EventDialog::playAudioFile()
