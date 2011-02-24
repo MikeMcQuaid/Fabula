@@ -19,10 +19,6 @@
   <property name="windowTitle">
    <string>Fabula</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="Fabula.qrc">
-    <normaloff>:/icons/audio-input-microphone.png</normaloff>:/icons/audio-input-microphone.png</iconset>
-  </property>
   <property name="iconSize">
    <size>
     <width>22</width>

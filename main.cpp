@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
 
 #ifdef Q_WS_MAC
     application.setAttribute(Qt::AA_DontShowIconsInMenus);
+#else
+    application.setWindowIcon(":/icons/audio-input-microphone.png");
 #endif
 
     MainWindow mainWindow;
