@@ -31,14 +31,6 @@ public:
     void setSourceModel(QAbstractItemModel *sourceModel);
 };
 
-class RemoveFirstColumnDuplicatesProxyModel : public QSortFilterProxyModel
-{
-public:
-    explicit RemoveFirstColumnDuplicatesProxyModel(QObject *parent = 0);
-protected:
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
-};
-
 HideColumnsProxyModel::HideColumnsProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
 {
@@ -146,28 +138,9 @@ void TableToDuplicatedTreeProxyModel::setSourceModel(QAbstractItemModel *sourceM
     QSortFilterProxyModel::setSourceModel(sourceModel);
 }
 
-RemoveFirstColumnDuplicatesProxyModel::RemoveFirstColumnDuplicatesProxyModel(QObject *parent)
-    : QSortFilterProxyModel(parent)
-{
-}
-
-bool RemoveFirstColumnDuplicatesProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
-{
-    if (sourceRow && !sourceParent.isValid()) {
-        const QModelIndex rowIndex = sourceModel()->index(sourceRow, 0, sourceParent);
-        const int previousRow = sourceRow - 1;
-        const QModelIndex previousIndex = sourceModel()->index(previousRow, 0, sourceParent);
-        if (rowIndex.isValid() && previousIndex.isValid() &&
-                sourceModel()->data(rowIndex) == sourceModel()->data(previousIndex))
-            return false;
-    }
-    return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
-}
-
 TableToTreeProxyModel::TableToTreeProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent),
-      m_removeDuplicatesModel(new RemoveFirstColumnDuplicatesProxyModel(this)),
-      m_tableToTreeModel(new TableToDuplicatedTreeProxyModel(m_removeDuplicatesModel)),
+      m_tableToTreeModel(new TableToDuplicatedTreeProxyModel(m_hideColumnsModel)),
       m_hideColumnsModel(new HideColumnsProxyModel(m_tableToTreeModel))
 {
 }
@@ -182,6 +155,5 @@ void TableToTreeProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     m_hideColumnsModel->setSourceModel(sourceModel);
     m_hideColumnsModel->setHideColumns(m_hideColumns);
     m_tableToTreeModel->setSourceModel(m_hideColumnsModel);
-    m_removeDuplicatesModel->setSourceModel(m_tableToTreeModel);
-    QSortFilterProxyModel::setSourceModel(m_removeDuplicatesModel);
+    QSortFilterProxyModel::setSourceModel(m_tableToTreeModel);
 }

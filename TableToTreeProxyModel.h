@@ -17,7 +17,6 @@ public:
     void setHideColumns(const QList<int> &columns);
 private:
     QList<int> m_hideColumns;
-    RemoveFirstColumnDuplicatesProxyModel *m_removeDuplicatesModel;
     TableToDuplicatedTreeProxyModel *m_tableToTreeModel;
     HideColumnsProxyModel *m_hideColumnsModel;
 };
