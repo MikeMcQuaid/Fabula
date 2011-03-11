@@ -133,8 +133,26 @@ bool TableToDuplicatedTreeProxyModel::hasChildren(const QModelIndex &parent) con
     return !parent.parent().isValid();
 }
 
+struct TreeData {
+    TreeData *parent;
+    QList<TreeData*> children;
+    QString text;
+};
+
 void TableToDuplicatedTreeProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
+    TreeData *root = new TreeData;
+    for (int column=0; column < sourceModel->columnCount(); ++column) {
+        for (int row=0; row < sourceModel->rowCount(); ++row) {
+            TreeData *data = new TreeData;
+            if (!row) {
+                data->parent = root;
+                data->parent->children.append(data);
+            }
+            data->text = sourceModel->data(sourceModel->index(row, column)).toString();
+        }
+    }
+
     QAbstractProxyModel::setSourceModel(sourceModel);
 }
 
