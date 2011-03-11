@@ -80,7 +80,6 @@ MainWindow::MainWindow(QWidget *parent) :
     eventsModel = new QSqlRelationalTableModel();
     eventsModel->setObjectName("eventsModel");
     eventsModel->setTable(EventsTable);
-    eventsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
     // TODO: Get these columns from database
     eventsModel->setHeaderData(0, Qt::Horizontal, tr("ID"));
@@ -317,8 +316,6 @@ void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog
     if (!model)
         return;
 
-    Q_ASSERT(model->editStrategy() == QSqlTableModel::OnFieldChange);
-
     const QModelIndex &rootIndex = rootModelIndex(index);
     Q_ASSERT(rootIndex.isValid());
 
@@ -329,7 +326,7 @@ void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog
         return;
 
     dialog->setWindowModality(Qt::WindowModal);
-    dialog->setModelRow(model, row, mode);
+    dialog->setModelRow(model, row);
     int result = dialog->exec();
     if (result == QDialog::Accepted) {
         if (mode == SqlRelationalTableDialog::NewMode) {

@@ -22,7 +22,7 @@ public:
         EditMode
     };
 
-    void setModelRow(QSqlRelationalTableModel *model, int row, Mode mode = EditMode);
+    void setModelRow(QSqlRelationalTableModel *model, int row);
 public slots:
     void accept();
 protected slots:
@@ -31,20 +31,15 @@ protected:
     explicit SqlRelationalTableDialog(QWidget *parent = 0);
 
     void writeToComboBox(QComboBox *comboBox);
-    void writeFromComboBox(QComboBox *comboBox);
     void writeToLineEdit(QLineEdit *lineEdit);
-    void writeFromLineEdit(QLineEdit *lineEdit);
     void writeToTextEdit(QTextEdit *textEdit);
-    void writeFromTextEdit(QTextEdit *textEdit);
     void setupWidgets();
     void writeToWidgets();
     void writeFromWidgets();
 
     QDataWidgetMapper *m_mapper;
     int m_row;
-    Mode m_mode;
     QSqlRelationalTableModel *m_model;
-    QSqlRelationalDelegate *m_delegate;
     QMap<int, QComboBox*> m_columnComboBox;
     QMap<int, QLineEdit*> m_columnLineEdit;
     QMap<int, QTextEdit*> m_columnTextEdit;
