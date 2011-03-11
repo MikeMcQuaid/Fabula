@@ -16,7 +16,7 @@ private:
     QList<int> m_hideColumns;
 };
 
-class TableToDuplicatedTreeProxyModel : public QSortFilterProxyModel
+class TableToDuplicatedTreeProxyModel : public QAbstractProxyModel
 {
 public:
     explicit TableToDuplicatedTreeProxyModel(QObject *parent = 0);
@@ -50,7 +50,7 @@ bool HideColumnsProxyModel::filterAcceptsColumn(int sourceColumn, const QModelIn
 }
 
 TableToDuplicatedTreeProxyModel::TableToDuplicatedTreeProxyModel(QObject *parent)
-    : QSortFilterProxyModel(parent)
+    : QAbstractProxyModel(parent)
 {
 }
 
@@ -74,7 +74,7 @@ QVariant TableToDuplicatedTreeProxyModel::data(const QModelIndex &proxyIndex, in
 
     QModelIndex parent = proxyIndex.parent();
     if (!parent.isValid())
-        return QSortFilterProxyModel::data(proxyIndex, role);
+        return QAbstractProxyModel::data(proxyIndex, role);
 
     QModelIndex firstIndex = sourceModel()->index(0, 0);
     QVariant parentData = sourceModel()->data(mapToSource(parent), role);
@@ -135,7 +135,7 @@ bool TableToDuplicatedTreeProxyModel::hasChildren(const QModelIndex &parent) con
 
 void TableToDuplicatedTreeProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
-    QSortFilterProxyModel::setSourceModel(sourceModel);
+    QAbstractProxyModel::setSourceModel(sourceModel);
 }
 
 TableToTreeProxyModel::TableToTreeProxyModel(QObject *parent)
