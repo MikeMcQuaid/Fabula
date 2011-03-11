@@ -325,16 +325,16 @@ void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog
     if (!dialog)
         return;
 
+    if (mode == SqlRelationalTableDialog::NewMode) {
+        bool rowWasInserted = model->insertRow(row);
+        Q_ASSERT(rowWasInserted);
+        if (!rowWasInserted)
+            return;
+    }
     dialog->setWindowModality(Qt::WindowModal);
     dialog->setModelRow(model, row);
     int result = dialog->exec();
     if (result == QDialog::Accepted) {
-        if (mode == SqlRelationalTableDialog::NewMode) {
-            bool rowWasInserted = model->insertRow(row);
-            Q_ASSERT(rowWasInserted);
-            if (!rowWasInserted)
-                return;
-        }
         dialog->writeToModel();
         model->submit();
         if (reloadModel)
