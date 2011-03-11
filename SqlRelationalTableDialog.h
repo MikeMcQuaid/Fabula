@@ -15,30 +15,19 @@ class SqlRelationalTableDialog : public QDialog
 {
     Q_OBJECT
 public:
-    void writeToModel();
-
-    enum Mode {
-        NewMode,
-        EditMode
-    };
-
-    void setModelRow(QSqlRelationalTableModel *model, int row);
+    int row() const;
+    QSqlRelationalTableModel* model() const;
 public slots:
+    void setRow(int row);
     void accept();
 protected slots:
     void checkWriteReady();
 protected:
-    explicit SqlRelationalTableDialog(QWidget *parent = 0);
-
-    void writeToComboBox(QComboBox *comboBox);
-    void writeToLineEdit(QLineEdit *lineEdit);
-    void writeToTextEdit(QTextEdit *textEdit);
+    explicit SqlRelationalTableDialog(QSqlRelationalTableModel *model, QWidget *parent = 0);
+    void mapComboBox(QComboBox *comboBox);
     void setupWidgets();
-    void writeToWidgets();
-    void writeFromWidgets();
 
     QDataWidgetMapper *m_mapper;
-    int m_row;
     QSqlRelationalTableModel *m_model;
     QMap<int, QComboBox*> m_columnComboBox;
     QMap<int, QLineEdit*> m_columnLineEdit;

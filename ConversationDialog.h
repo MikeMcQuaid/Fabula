@@ -12,7 +12,7 @@ class ConversationDialog : public SqlRelationalTableDialog
     Q_OBJECT
 
 public:
-    explicit ConversationDialog(QWidget *parent = 0);
+    explicit ConversationDialog(QSqlRelationalTableModel *model, QWidget *parent = 0);
     ~ConversationDialog();
 
 private:

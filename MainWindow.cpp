@@ -109,7 +109,6 @@ MainWindow::MainWindow(QWidget *parent) :
     conversationsTableModel = new QSqlRelationalTableModel();
     conversationsTableModel->setObjectName("conversationsTableModel");
     conversationsTableModel->setTable(ConversationsTable);
-    conversationsTableModel->setEditStrategy(QSqlTableModel::OnFieldChange);
 
     QMap<int, QSqlRelation> conversationsRelations = database->tableRelations(ConversationsTable);
     foreach(int column, conversationsRelations.keys())
@@ -120,7 +119,6 @@ MainWindow::MainWindow(QWidget *parent) :
     charactersTableModel = new QSqlRelationalTableModel();
     charactersTableModel->setObjectName("charactersTableModel");
     charactersTableModel->setTable(CharactersTable);
-    charactersTableModel->setEditStrategy(QSqlTableModel::OnFieldChange);
     charactersTableModel->select();
 
     conversationsTreeModel = new TableToTreeProxyModel(this);
@@ -200,14 +198,12 @@ void MainWindow::addEvent()
     QModelIndex index = ui->eventsView->currentIndex();
     if (!index.isValid())
         index = ui->eventsView->model()->index(0, 0);
-    editViewItem(index, new EventDialog(this),
-                 SqlRelationalTableDialog::NewMode, eventsModel);
+    editViewItem(index, new EventDialog(eventsModel, this), NewMode);
 }
 
 void MainWindow::editEvent(const QModelIndex &index)
 {
-    editViewItem(index, new EventDialog(this),
-                 SqlRelationalTableDialog::EditMode, eventsModel);
+    editViewItem(index, new EventDialog(eventsModel, this), EditMode);
 }
 
 void MainWindow::deleteEvent()
@@ -223,7 +219,7 @@ void MainWindow::deleteEvent()
 
 void MainWindow::addConversation()
 {
-    addOrEditTreeItem(SqlRelationalTableDialog::NewMode, ConversationItem);
+    addOrEditTreeItem(NewMode, ConversationItem);
 }
 
 void MainWindow::editTreeItem(const QModelIndex &index)
@@ -234,15 +230,15 @@ void MainWindow::editTreeItem(const QModelIndex &index)
     if (index.parent().isValid())
         treeItem = ConversationItem;
 
-    addOrEditTreeItem(SqlRelationalTableDialog::EditMode, treeItem, index);
+    addOrEditTreeItem(EditMode, treeItem, index);
 }
 
 void MainWindow::addCharacter()
 {
-    addOrEditTreeItem(SqlRelationalTableDialog::NewMode, CharacterItem);
+    addOrEditTreeItem(NewMode, CharacterItem);
 }
 
-void MainWindow::addOrEditTreeItem(SqlRelationalTableDialog::Mode mode, TreeItem treeItem, const QModelIndex &index)
+void MainWindow::addOrEditTreeItem(DialogMode mode, TreeItem treeItem, const QModelIndex &index)
 {
     const int eventsTableRow = rootModelIndex(index).row();
     int eventsTableColumn = -1;
@@ -255,14 +251,14 @@ void MainWindow::addOrEditTreeItem(SqlRelationalTableDialog::Mode mode, TreeItem
         eventsTableColumn = 2;
         itemTableNameColumn = 1;
         tableModel = charactersTableModel;
-        tableDialog = new CharacterDialog(this);
+        tableDialog = new CharacterDialog(charactersTableModel, this);
         break;
 
     case ConversationItem:
         eventsTableColumn = 3;
         itemTableNameColumn = 3;
         tableModel = conversationsTableModel;
-        tableDialog = new ConversationDialog(this);
+        tableDialog = new ConversationDialog(conversationsTableModel, this);
         break;
     }
 
@@ -281,7 +277,7 @@ void MainWindow::addOrEditTreeItem(SqlRelationalTableDialog::Mode mode, TreeItem
 
     QModelIndex itemIndex = itemIndexes.first();
 
-    editViewItem(itemIndex, tableDialog, mode, tableModel, eventsModel);
+    editViewItem(itemIndex, tableDialog, mode);
 }
 
 void MainWindow::deleteConversation()
@@ -309,13 +305,8 @@ void MainWindow::deleteCharacter()
 }
 
 void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog *dialog,
-                              SqlRelationalTableDialog::Mode mode, QSqlRelationalTableModel *model,
-                              QSqlRelationalTableModel *reloadModel)
+                              DialogMode mode)
 {
-    Q_ASSERT(model);
-    if (!model)
-        return;
-
     const QModelIndex &rootIndex = rootModelIndex(index);
     Q_ASSERT(rootIndex.isValid());
 
@@ -325,20 +316,24 @@ void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog
     if (!dialog)
         return;
 
-    if (mode == SqlRelationalTableDialog::NewMode) {
+    QSqlRelationalTableModel *model = dialog->model();
+    Q_ASSERT(model);
+    if (!model)
+        return;
+
+    if (mode == NewMode) {
         bool rowWasInserted = model->insertRow(row);
         Q_ASSERT(rowWasInserted);
         if (!rowWasInserted)
             return;
     }
-    dialog->setWindowModality(Qt::WindowModal);
-    dialog->setModelRow(model, row);
+
+    dialog->setRow(row);
+
     int result = dialog->exec();
-    if (result == QDialog::Accepted) {
-        dialog->writeToModel();
-        model->submit();
-        if (reloadModel)
-            reloadModel->select();
+    if (mode == NewMode && result == QDialog::Rejected) {
+        bool rowWasRemoved = model->removeRow(row);
+        Q_ASSERT(rowWasRemoved);
     }
 }
 

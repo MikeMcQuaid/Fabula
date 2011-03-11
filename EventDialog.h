@@ -18,7 +18,7 @@ class EventDialog : public SqlRelationalTableDialog
     Q_OBJECT
 
 public:
-    explicit EventDialog(QWidget *parent = 0);
+    explicit EventDialog(QSqlRelationalTableModel *model, QWidget *parent = 0);
     ~EventDialog();
 
 private slots:

@@ -10,12 +10,26 @@
 #include <QDialogButtonBox>
 #include <QSqlError>
 
-SqlRelationalTableDialog::SqlRelationalTableDialog(QWidget *parent) :
-    QDialog(parent), m_mapper(new QDataWidgetMapper(this)), m_row(0),
-    m_model(0), m_okButton(0)
+SqlRelationalTableDialog::SqlRelationalTableDialog(QSqlRelationalTableModel *model, QWidget *parent) :
+    QDialog(parent), m_mapper(new QDataWidgetMapper(this)), m_model(model), m_okButton(0)
 {
+    Q_ASSERT(model);
+
+    setWindowModality(Qt::WindowModal);
+
+    m_mapper->setModel(model);
     m_mapper->setItemDelegate(new QSqlRelationalDelegate(this));
     m_mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
+}
+
+void SqlRelationalTableDialog::setRow(int row)
+{
+    m_mapper->setCurrentIndex(row);
+}
+
+QSqlRelationalTableModel* SqlRelationalTableDialog::model() const
+{
+    return m_model;
 }
 
 void SqlRelationalTableDialog::setupWidgets()
@@ -26,58 +40,37 @@ void SqlRelationalTableDialog::setupWidgets()
         m_okButton = buttonBoxes.first()->button(QDialogButtonBox::Ok);
 
     foreach(QComboBox *comboBox, m_columnComboBox) {
+        mapComboBox(comboBox);
+
         connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(checkWriteReady()));
         connect(comboBox, SIGNAL(editTextChanged(QString)), this, SLOT(checkWriteReady()));
     }
 
-    foreach(QLineEdit *lineEdit, m_columnLineEdit)
-        connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(checkWriteReady()));
+    foreach(QLineEdit *lineEdit, m_columnLineEdit) {
+        const int lineEditColumn = m_columnLineEdit.key(lineEdit);
+        m_mapper->addMapping(lineEdit, lineEditColumn);
 
-    foreach(QTextEdit *textEdit, m_columnTextEdit)
+        connect(lineEdit, SIGNAL(textChanged(QString)), this, SLOT(checkWriteReady()));
+    }
+
+    foreach(QTextEdit *textEdit, m_columnTextEdit) {
+        const int textEditColumn = m_columnTextEdit.key(textEdit);
+        m_mapper->addMapping(textEdit, textEditColumn, "plainText");
+
         connect(textEdit, SIGNAL(textChanged()), this, SLOT(checkWriteReady()));
+    }
 
     checkWriteReady();
 }
 
 void SqlRelationalTableDialog::accept()
 {
-    // Manually set the result first so it's propogated to the delegate before closing
-    setResult(QDialog::Accepted);
-    done(QDialog::Accepted);
-}
-
-void SqlRelationalTableDialog::setModelRow(QSqlRelationalTableModel *model, int row) {
-    m_row = row;
-
-    Q_ASSERT(model);
-    if (!model)
-        return;
-
-    m_model = model;
-    m_mapper->setModel(model);
-
-    writeToWidgets();
-
-    m_mapper->setCurrentIndex(row);
-}
-
-void SqlRelationalTableDialog::writeToModel() {
     bool submitted = m_mapper->submit();
     Q_ASSERT(submitted);
+    QDialog::accept();
 }
 
-void SqlRelationalTableDialog::writeToWidgets() {
-    foreach(QComboBox *comboBox, m_columnComboBox)
-        writeToComboBox(comboBox);
-
-    foreach(QLineEdit *lineEdit, m_columnLineEdit)
-        writeToLineEdit(lineEdit);
-
-    foreach(QTextEdit *textEdit, m_columnTextEdit)
-        writeToTextEdit(textEdit);
-}
-
-void SqlRelationalTableDialog::writeToComboBox(QComboBox *comboBox) {
+void SqlRelationalTableDialog::mapComboBox(QComboBox *comboBox) {
     const int comboBoxColumn = m_columnComboBox.key(comboBox);
     // This workaround is needed because QDataWidgetMapper doesn't handle
     // QSqlRelationalTableModels properly yet.
@@ -87,16 +80,6 @@ void SqlRelationalTableDialog::writeToComboBox(QComboBox *comboBox) {
     comboBox->setModel(relationModel);
     comboBox->setModelColumn(relationColumn);
     m_mapper->addMapping(comboBox, comboBoxColumn);
-}
-
-void SqlRelationalTableDialog::writeToLineEdit(QLineEdit *lineEdit) {
-    const int lineEditColumn = m_columnLineEdit.key(lineEdit);
-    m_mapper->addMapping(lineEdit, lineEditColumn);
-}
-
-void SqlRelationalTableDialog::writeToTextEdit(QTextEdit *textEdit) {
-    const int textEditColumn = m_columnTextEdit.key(textEdit);
-    m_mapper->addMapping(textEdit, textEditColumn, "plainText");
 }
 
 void SqlRelationalTableDialog::checkWriteReady() {

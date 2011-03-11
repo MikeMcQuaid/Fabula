@@ -11,8 +11,8 @@ enum ConversationsColumn {
     NameColumn = 3,
 };
 
-ConversationDialog::ConversationDialog(QWidget *parent) :
-    SqlRelationalTableDialog(parent),
+ConversationDialog::ConversationDialog(QSqlRelationalTableModel *model, QWidget *parent) :
+    SqlRelationalTableDialog(model, parent),
     ui(new Ui::ConversationDialog)
 {
     ui->setupUi(this);

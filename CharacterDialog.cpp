@@ -7,8 +7,8 @@ enum CharacterColumn {
     NameColumn = 1
 };
 
-CharacterDialog::CharacterDialog(QWidget *parent) :
-    SqlRelationalTableDialog(parent),
+CharacterDialog::CharacterDialog(QSqlRelationalTableModel *model, QWidget *parent) :
+    SqlRelationalTableDialog(model, parent),
     ui(new Ui::CharacterDialog)
 {
     ui->setupUi(this);

@@ -20,8 +20,8 @@ enum EventsColumn {
     TextColumn = 5
 };
 
-EventDialog::EventDialog(QWidget *parent) :
-    SqlRelationalTableDialog(parent), ui(new Ui::EventDialog), audioFilePlayer(0)
+EventDialog::EventDialog(QSqlRelationalTableModel *model, QWidget *parent) :
+    SqlRelationalTableDialog(model, parent), ui(new Ui::EventDialog), audioFilePlayer(0)
 {
     ui->setupUi(this);
 

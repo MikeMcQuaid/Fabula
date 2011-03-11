@@ -12,7 +12,7 @@ class CharacterDialog : public SqlRelationalTableDialog
     Q_OBJECT
 
 public:
-    explicit CharacterDialog(QWidget *parent = 0);
+    explicit CharacterDialog(QSqlRelationalTableModel *model, QWidget *parent = 0);
     ~CharacterDialog();
 
 private:

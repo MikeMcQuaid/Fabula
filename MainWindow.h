@@ -47,6 +47,11 @@ public:
         ConversationItem
     };
 
+    enum DialogMode {
+        NewMode,
+        EditMode
+    };
+
 public slots:
     void newFile();
     void openFile(QString fileName = QString());
@@ -57,13 +62,11 @@ public slots:
     void deleteConversation();
     void addCharacter();
     void deleteCharacter();
-    void addOrEditTreeItem(SqlRelationalTableDialog::Mode mode, TreeItem treeItem,
+    void addOrEditTreeItem(DialogMode mode, TreeItem treeItem,
                            const QModelIndex &index = QModelIndex());
     void editViewItem(const QModelIndex &index,
                       SqlRelationalTableDialog *dialog,
-                      SqlRelationalTableDialog::Mode mode,
-                      QSqlRelationalTableModel *model,
-                      QSqlRelationalTableModel *reloadModel = 0);
+                      DialogMode mode);
     void deleteViewItem(const QModelIndex &index, QSqlRelationalTableModel *model);
     void reloadTree();
     void reloadEvents();
