@@ -16,6 +16,8 @@ private:
     QList<int> m_hideColumns;
 };
 
+class TreeNode;
+
 class TableToDuplicatedTreeProxyModel : public QAbstractProxyModel
 {
 public:
@@ -29,6 +31,22 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
     void setSourceModel(QAbstractItemModel *sourceModel);
+private:
+    TreeNode *rootNode;
+    QList<QList<TreeNode*> > tableNodes;
+};
+
+struct TreeNode {
+    TreeNode(int row=-1, int column=-1, TreeNode *parent=0)
+        : row(row), column(column), parent(parent)
+    {
+        if (parent)
+            parent->children.append(this);
+    };
+    int row;
+    int column;
+    TreeNode *parent;
+    QList<TreeNode*> children;
 };
 
 HideColumnsProxyModel::HideColumnsProxyModel(QObject *parent)
@@ -56,15 +74,26 @@ TableToDuplicatedTreeProxyModel::TableToDuplicatedTreeProxyModel(QObject *parent
 
 QModelIndex	TableToDuplicatedTreeProxyModel::mapFromSource(const QModelIndex &sourceIndex) const
 {
+    TreeNode *node = tableNodes.at(sourceIndex.column()).at(sourceIndex.row());
+    Q_ASSERT(node);
+    if (!node)
+        return QModelIndex();
+
+    Q_ASSERT(false);
     return index(sourceIndex.row(), 0);
 }
 
 QModelIndex	TableToDuplicatedTreeProxyModel::mapToSource(const QModelIndex &proxyIndex) const
 {
-    QModelIndex parentIndex = proxyIndex.parent();
-    if (parentIndex.isValid())
-        return sourceModel()->index(parentIndex.row(), 1);
-    return sourceModel()->index(proxyIndex.row(), 0);
+    if (!proxyIndex.isValid())
+        return QModelIndex();
+
+    const TreeNode *node = static_cast<TreeNode*>(proxyIndex.internalPointer());
+    Q_ASSERT(node);
+    if (!node)
+        return QModelIndex();
+
+    return sourceModel()->index(node->row, node->column);
 }
 
 QVariant TableToDuplicatedTreeProxyModel::data(const QModelIndex &proxyIndex, int role) const
@@ -72,19 +101,12 @@ QVariant TableToDuplicatedTreeProxyModel::data(const QModelIndex &proxyIndex, in
     if (!proxyIndex.isValid())
         return QVariant();
 
-    QModelIndex parent = proxyIndex.parent();
-    if (!parent.isValid())
-        return QAbstractProxyModel::data(proxyIndex, role);
+    const TreeNode *node = static_cast<TreeNode*>(proxyIndex.internalPointer());
+    Q_ASSERT(node);
+    if (!node)
+        return QVariant();
 
-    QModelIndex firstIndex = sourceModel()->index(0, 0);
-    QVariant parentData = sourceModel()->data(mapToSource(parent), role);
-    if (!parentData.isValid())
-        return sourceModel()->data(mapToSource(proxyIndex), role);
-
-    QModelIndexList indexes = sourceModel()->match(firstIndex, role, parentData, -1);
-    QModelIndex parentIndex = indexes.at(proxyIndex.row());
-    QModelIndex index = sourceModel()->index(parentIndex.row(), 1);
-
+    const QModelIndex index = sourceModel()->index(node->row, node->column);
     return sourceModel()->data(index, role);
 }
 
@@ -93,33 +115,43 @@ QModelIndex TableToDuplicatedTreeProxyModel::index(int row, int column, const QM
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    quint32 internalId = parent.row() + 1;
-    return createIndex(row, column, internalId);
+    const TreeNode *parentNode = static_cast<TreeNode*>(parent.internalPointer());
+    if (!parentNode)
+        parentNode = rootNode;
+
+    TreeNode *node = parentNode->children.at(row);
+    Q_ASSERT(node);
+    if (!node)
+        return QModelIndex();
+
+    return createIndex(row, column, node);
 }
 
 QModelIndex TableToDuplicatedTreeProxyModel::parent(const QModelIndex &child) const
 {
-    if (!child.isValid() || !child.internalId())
+    if (!child.isValid())
         return QModelIndex();
 
-    int parentRowId = child.internalId() - 1;
-    return createIndex(parentRowId, 0);
+    const TreeNode *childNode = static_cast<TreeNode*>(child.internalPointer());
+    Q_ASSERT(childNode);
+    if (!childNode)
+        return QModelIndex();
+
+    TreeNode *parentNode = childNode->parent;
+    Q_ASSERT(parentNode);
+    if (!parentNode)
+        return QModelIndex();
+
+    return createIndex(parentNode->row, parentNode->column, parentNode);
 }
 
 int TableToDuplicatedTreeProxyModel::rowCount(const QModelIndex &parent) const
 {
-    // TODO: Checking parent of parent is a nasty hack but it works for now.
-    if (parent.parent().isValid())
-        return 0;
+    const TreeNode *node = static_cast<TreeNode*>(parent.internalPointer());
+    if (!node)
+        node = rootNode;
 
-    if (!parent.isValid()) {
-        return sourceModel()->rowCount();
-    }
-
-    QVariant parentData = sourceModel()->data(mapToSource(parent));
-    QModelIndex firstIndex = sourceModel()->index(0, 0);
-    int matches = sourceModel()->match(firstIndex, Qt::DisplayRole, parentData, -1).size();
-    return matches;
+    return node->children.size();
 }
 
 int TableToDuplicatedTreeProxyModel::columnCount(const QModelIndex &) const
@@ -129,28 +161,29 @@ int TableToDuplicatedTreeProxyModel::columnCount(const QModelIndex &) const
 
 bool TableToDuplicatedTreeProxyModel::hasChildren(const QModelIndex &parent) const
 {
-    // TODO: Horrible, horrible hack but works in the short term
-    return !parent.parent().isValid();
-}
+    const TreeNode *node = static_cast<TreeNode*>(parent.internalPointer());
+    if (!node)
+        node = rootNode;
 
-struct TreeData {
-    TreeData *parent;
-    QList<TreeData*> children;
-    QString text;
-};
+    return node->children.size() > 0;
+}
 
 void TableToDuplicatedTreeProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
-    TreeData *root = new TreeData;
-    for (int column=0; column < sourceModel->columnCount(); ++column) {
-        for (int row=0; row < sourceModel->rowCount(); ++row) {
-            TreeData *data = new TreeData;
-            if (!row) {
-                data->parent = root;
-                data->parent->children.append(data);
-            }
-            data->text = sourceModel->data(sourceModel->index(row, column)).toString();
+    // TODO: cleanup on already existing
+    tableNodes.clear();
+    rootNode = new TreeNode;
+
+    for (int row=0; row < sourceModel->rowCount(); ++row) {
+        QList<TreeNode*> rowNodes;
+        TreeNode *previousNode = rootNode;
+        for (int column=0; column < sourceModel->columnCount(); ++column) {
+            TreeNode *node = new TreeNode(row, column, previousNode);
+            //node->text = sourceModel->data(sourceModel->index(row, column)).toString();
+            rowNodes.insert(column, node);
+            previousNode = node;
         }
+        tableNodes.insert(row, rowNodes);
     }
 
     QAbstractProxyModel::setSourceModel(sourceModel);
@@ -158,8 +191,8 @@ void TableToDuplicatedTreeProxyModel::setSourceModel(QAbstractItemModel *sourceM
 
 TableToTreeProxyModel::TableToTreeProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent),
-      m_tableToTreeModel(new TableToDuplicatedTreeProxyModel(m_hideColumnsModel)),
-      m_hideColumnsModel(new HideColumnsProxyModel(m_tableToTreeModel))
+      m_tableToTreeModel(new TableToDuplicatedTreeProxyModel(this)),
+      m_hideColumnsModel(new HideColumnsProxyModel(this))
 {
 }
 
