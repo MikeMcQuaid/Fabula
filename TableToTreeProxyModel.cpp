@@ -24,7 +24,7 @@ TableToTreeProxyModel::TableToTreeProxyModel(QObject *parent)
 {
 }
 
-QModelIndex	TableToTreeProxyModel::mapFromSource(const QModelIndex &sourceIndex) const
+QModelIndex TableToTreeProxyModel::mapFromSource(const QModelIndex &sourceIndex) const
 {
     TreeNode *node = tableNodes.at(sourceIndex.column()).at(sourceIndex.row());
     Q_ASSERT(node);
@@ -35,7 +35,7 @@ QModelIndex	TableToTreeProxyModel::mapFromSource(const QModelIndex &sourceIndex)
     return index(sourceIndex.row(), 0);
 }
 
-QModelIndex	TableToTreeProxyModel::mapToSource(const QModelIndex &proxyIndex) const
+QModelIndex TableToTreeProxyModel::mapToSource(const QModelIndex &proxyIndex) const
 {
     if (!proxyIndex.isValid())
         return QModelIndex();
