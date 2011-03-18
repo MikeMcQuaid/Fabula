@@ -55,6 +55,7 @@ set(SOURCES
 	CharacterDialog.cpp
 	SqlRelationalTableDialog.cpp
 	TableToTreeProxyModel.cpp
+	HideColumnsProxyModel.cpp
 )
 
 set(HEADERS
@@ -66,6 +67,7 @@ set(HEADERS
 	CharacterDialog.h
 	SqlRelationalTableDialog.h
 	TableToTreeProxyModel.h
+	HideColumnsProxyModel.h
 )
 qt4_wrap_cpp(MOC_SOURCES ${HEADERS})
 

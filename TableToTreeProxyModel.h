@@ -2,23 +2,26 @@
 #define SQLQUERYTREEPROXYMODEL_H
 
 #include <QList>
-#include <QSortFilterProxyModel>
+#include <QAbstractProxyModel>
 
-class TableToDuplicatedTreeProxyModel;
-class RemoveFirstColumnDuplicatesProxyModel;
-class HideColumnsProxyModel;
+class TreeNode;
 
-class TableToTreeProxyModel : public QSortFilterProxyModel
+class TableToTreeProxyModel : public QAbstractProxyModel
 {
-    Q_OBJECT
 public:
     explicit TableToTreeProxyModel(QObject *parent = 0);
+    QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
+    QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
+    QVariant data(const QModelIndex &proxyIndex, int role = Qt::DisplayRole) const;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex parent(const QModelIndex &child) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
     void setSourceModel(QAbstractItemModel *sourceModel);
-    void setHideColumns(const QList<int> &columns);
 private:
-    QList<int> m_hideColumns;
-    TableToDuplicatedTreeProxyModel *m_tableToTreeModel;
-    HideColumnsProxyModel *m_hideColumnsModel;
+    TreeNode *rootNode;
+    QList<QList<TreeNode*> > tableNodes;
 };
 
 #endif // SQLQUERYTREEPROXYMODEL_H

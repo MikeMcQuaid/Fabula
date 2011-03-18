@@ -20,6 +20,7 @@
 
 #include "Database.h"
 #include "TableToTreeProxyModel.h"
+#include "HideColumnsProxyModel.h"
 #include "PreferencesDialog.h"
 #include "ConversationDialog.h"
 #include "CharacterDialog.h"
@@ -121,12 +122,16 @@ MainWindow::MainWindow(QWidget *parent) :
     charactersTableModel->setTable(CharactersTable);
     charactersTableModel->select();
 
-    conversationsTreeModel = new TableToTreeProxyModel(this);
-    conversationsTreeModel->setObjectName("conversationsTreeModel");
+    HideColumnsProxyModel *hideEventsTableColumnsModel = new HideColumnsProxyModel(this);
+    hideEventsTableColumnsModel->setObjectName("hideEventsTableColumnsModel");
     QList<int> hideColumns;
     hideColumns << 0 << 1;
-    conversationsTreeModel->setHideColumns(hideColumns);
-    conversationsTreeModel->setSourceModel(eventsModel);
+    hideEventsTableColumnsModel->setHideColumns(hideColumns);
+    hideEventsTableColumnsModel->setSourceModel(eventsModel);
+
+    conversationsTreeModel = new TableToTreeProxyModel(this);
+    conversationsTreeModel->setObjectName("conversationsTreeModel");
+    conversationsTreeModel->setSourceModel(hideEventsTableColumnsModel);
     ui->conversationsView->setModel(conversationsTreeModel);
     ui->conversationsView->sortByColumn(0, Qt::AscendingOrder);
 
