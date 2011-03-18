@@ -47,6 +47,7 @@ struct TreeNode {
     int column;
     TreeNode *parent;
     QList<TreeNode*> children;
+    QString text;
 };
 
 HideColumnsProxyModel::HideColumnsProxyModel(QObject *parent)
@@ -178,8 +179,22 @@ void TableToDuplicatedTreeProxyModel::setSourceModel(QAbstractItemModel *sourceM
         QList<TreeNode*> rowNodes;
         TreeNode *previousNode = rootNode;
         for (int column=0; column < sourceModel->columnCount(); ++column) {
-            TreeNode *node = new TreeNode(row, column, previousNode);
-            //node->text = sourceModel->data(sourceModel->index(row, column)).toString();
+            const QString &nodeText = sourceModel->data(sourceModel->index(row, column)).toString();
+            TreeNode *node = 0;
+            foreach (TreeNode *siblingNode, previousNode->children) {
+                Q_ASSERT(siblingNode);
+                if (!siblingNode)
+                    continue;
+                if (siblingNode->text == nodeText) {
+                    node = siblingNode;
+                    break;
+                }
+            }
+
+            if (!node) {
+                node = new TreeNode(row, column, previousNode);
+                node->text = nodeText;
+            }
             rowNodes.insert(column, node);
             previousNode = node;
         }
