@@ -139,44 +139,46 @@ void TableToTreeProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     tableNodes.clear();
     delete rootNode;
 
-    disconnect(this->sourceModel(), SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-               this, SLOT(reset()));
+    if (this->sourceModel()) {
+        disconnect(this->sourceModel(), SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+                   this, SLOT(reset()));
 
-    disconnect(this->sourceModel(), SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
-               this, SLOT(reset()));
+        disconnect(this->sourceModel(), SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
+                   this, SLOT(reset()));
 
-//    disconnect(this->sourceModel(), SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-//               this, SLOT(reset()));
+        //    disconnect(this->sourceModel(), SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+        //               this, SLOT(reset()));
 
-    disconnect(this->sourceModel(), SIGNAL(rowsInserted(QModelIndex,int,int)),
-               this, SLOT(reset()));
+        disconnect(this->sourceModel(), SIGNAL(rowsInserted(QModelIndex,int,int)),
+                   this, SLOT(reset()));
 
-//    disconnect(this->sourceModel(), SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
-//               this, SLOT(reset()));
+        //    disconnect(this->sourceModel(), SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
+        //               this, SLOT(reset()));
 
-    disconnect(this->sourceModel(), SIGNAL(columnsInserted(QModelIndex,int,int)),
-               this, SLOT(reset()));
+        disconnect(this->sourceModel(), SIGNAL(columnsInserted(QModelIndex,int,int)),
+                   this, SLOT(reset()));
 
-//    disconnect(this->sourceModel(), SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-//               this, SLOT(reset()));
+        //    disconnect(this->sourceModel(), SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+        //               this, SLOT(reset()));
 
-    disconnect(this->sourceModel(), SIGNAL(rowsRemoved(QModelIndex,int,int)),
-               this, SLOT(reset()));
+        disconnect(this->sourceModel(), SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                   this, SLOT(reset()));
 
-//    disconnect(this->sourceModel(), SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-//               this, SLOT(reset()));
+        //    disconnect(this->sourceModel(), SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
+        //               this, SLOT(reset()));
 
-    disconnect(this->sourceModel(), SIGNAL(columnsRemoved(QModelIndex,int,int)),
-               this, SLOT(reset()));
+        disconnect(this->sourceModel(), SIGNAL(columnsRemoved(QModelIndex,int,int)),
+                   this, SLOT(reset()));
 
-//    disconnect(this->sourceModel(), SIGNAL(layoutAboutToBeChanged()),
-//               this, SLOT(reset()));
+        //    disconnect(this->sourceModel(), SIGNAL(layoutAboutToBeChanged()),
+        //               this, SLOT(reset()));
 
-    disconnect(this->sourceModel(), SIGNAL(layoutChanged()),
-               this, SLOT(reset()));
+        disconnect(this->sourceModel(), SIGNAL(layoutChanged()),
+                   this, SLOT(reset()));
 
-//    disconnect(this->sourceModel(), SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
-//    disconnect(this->sourceModel(), SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
+        //    disconnect(this->sourceModel(), SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
+        //    disconnect(this->sourceModel(), SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
+    }
 
     QAbstractProxyModel::setSourceModel(sourceModel);
     reset();
