@@ -56,6 +56,7 @@ set(SOURCES
 	SqlRelationalTableDialog.cpp
 	TableToTreeProxyModel.cpp
 	HideColumnsProxyModel.cpp
+	ThinSplitter.cpp
 )
 
 set(HEADERS
@@ -68,6 +69,7 @@ set(HEADERS
 	SqlRelationalTableDialog.h
 	TableToTreeProxyModel.h
 	HideColumnsProxyModel.h
+	ThinSplitter.h
 )
 qt4_wrap_cpp(MOC_SOURCES ${HEADERS})
 
@@ -99,7 +101,7 @@ if(APPLE)
 	execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${MACOSX_BUNDLE_ICON} ${MACOSX_BUNDLE_RESOURCES})
 endif()
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 add_executable(${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${SOURCES} ${MOC_SOURCES} ${FORMS_SOURCES} ${RESOURCES_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES})
 
