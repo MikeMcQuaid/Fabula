@@ -59,6 +59,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->hide();
 
     ui->splitter->setStretchFactor(1, 1);
+    QVariant treeSize = settings.value("treeSize");
+    QVariant tableSize = settings.value("tableSize");
+    if (treeSize.isValid() && tableSize.isValid()) {
+        QList<int> splitterSizes;
+        splitterSizes << treeSize.toInt() << tableSize.toInt();
+        ui->splitter->setSizes(splitterSizes);
+    }
 
     PreferencesDialog *preferences = new PreferencesDialog(this);
 
@@ -394,6 +401,8 @@ QAbstractItemModel* MainWindow::rootModel(QAbstractItemModel *model)
 
 MainWindow::~MainWindow()
 {
+    settings.setValue("treeSize", ui->splitter->sizes().first());
+    settings.setValue("tableSize", ui->splitter->sizes().last());
     delete ui;
     // Delete here rather than using this object as parent so we can ensure the
     // database is deleted last.
