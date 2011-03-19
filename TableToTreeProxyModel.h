@@ -8,8 +8,10 @@ class TreeNode;
 
 class TableToTreeProxyModel : public QAbstractProxyModel
 {
+    Q_OBJECT
 public:
     explicit TableToTreeProxyModel(QObject *parent = 0);
+    ~TableToTreeProxyModel();
     QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
     QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
     QVariant data(const QModelIndex &proxyIndex, int role = Qt::DisplayRole) const;
@@ -19,6 +21,8 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
     void setSourceModel(QAbstractItemModel *sourceModel);
+protected slots:
+    void reset();
 private:
     TreeNode *rootNode;
     QList<QList<TreeNode*> > tableNodes;
