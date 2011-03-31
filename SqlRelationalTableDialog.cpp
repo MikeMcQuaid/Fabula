@@ -66,6 +66,7 @@ void SqlRelationalTableDialog::setupWidgets()
 void SqlRelationalTableDialog::accept()
 {
     bool submitted = m_mapper->submit();
+    Q_UNUSED(submitted);
     Q_ASSERT(submitted);
     QDialog::accept();
 }

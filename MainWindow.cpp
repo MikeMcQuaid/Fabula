@@ -345,7 +345,8 @@ void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog
     int result = dialog->exec();
     if (mode == NewMode && result == QDialog::Rejected) {
         bool rowWasRemoved = model->removeRow(row);
-        Q_ASSERT(rowWasRemoved);
+        Q_UNUSED(rowWasRemoved);
+	Q_ASSERT(rowWasRemoved);
     }
 }
 
