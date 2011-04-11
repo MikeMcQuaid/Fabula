@@ -13,7 +13,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     QSqlTableModel *writersModel = new QSqlTableModel(this);
-    writersModel->setTable(WritersTable);
+    writersModel->setTable(Database::tableName(Database::Writer));
     writersModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
     writersModel->select();
     ui->writerComboBox->setModel(writersModel);

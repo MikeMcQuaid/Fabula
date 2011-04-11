@@ -23,12 +23,7 @@
 #include <QMap>
 #include <QStringList>
 #include <QDebug>
-
-#ifdef QT_DEBUG
-    bool debugMode = true;
-#else
-    bool debugMode = false;
-#endif
+#include <QMetaEnum>
 
 Database::Database(const QString &path, QObject *parent) :
         QObject(parent)
@@ -56,43 +51,35 @@ Database::Database(const QString &path, QObject *parent) :
 bool Database::create()
 {
     QMap<QString, QString> databaseStructure;
-
-    databaseStructure.insert(CharactersTable,
+    databaseStructure.insert(tableName(Character),
                              "id integer primary key autoincrement, "
                              "name text unique");
-
-    databaseStructure.insert(WritersTable,
+    databaseStructure.insert(tableName(Writer),
                              "id integer primary key autoincrement, "
                              "name text unique");
-
-    databaseStructure.insert(ConversationsTable,
+    databaseStructure.insert(tableName(Conversation),
                              "id integer primary key autoincrement, "
                              "conversation_type_id integer not null, "
                              "writer_id integer not null, "
                              "name text unique");
-
-    databaseStructure.insert(ConversationsEventsTable,
+    databaseStructure.insert(tableName(ConversationEvent),
                              "id integer primary key autoincrement, "
                              "conversation_id integer not null, "
                              "event_id integer not null, "
                              "sort integer not null");
-
-    databaseStructure.insert(EventsTable,
+    databaseStructure.insert(tableName(Event),
                              "id integer primary key autoincrement, "
                              "event_type_id integer not null, "
                              "character_id integer, "
                              "conversation_id integer not null, "
                              "audiofile text unique, "
                              "text text");
-
-    databaseStructure.insert(ConversationTypesTable,
+    databaseStructure.insert(tableName(ConversationType),
                              "id integer primary key autoincrement, "
                              "name text unique");
-
-    databaseStructure.insert(EventTypesTable,
+    databaseStructure.insert(tableName(EventType),
                              "id integer primary key autoincrement, "
                              "name text unique");
-
     QSqlQuery sqlQuery;
     foreach(const QString &tableName, databaseStructure.keys()) {
         QString query = "create table %1(%2)";
@@ -105,50 +92,51 @@ bool Database::create()
         }
     }
 
-    if (debugMode)
-        return insertDummyData();
-
+#ifdef QT_DEBUG
+    return insertTestData();
+#else
     return true;
+#endif
 }
 
-bool Database::insertDummyData()
+bool Database::insertTestData()
 {
     QStringList insertQueries;
     QString insert("insert into %1(id, %2) values (%3)");
 
-    QString insertCharacter(insert.arg(CharactersTable).arg("name"));
+    QString insertCharacter(insert.arg(tableName(Character)).arg("name"));
     insertQueries.append(insertCharacter.arg("1, 'Mike'"));
     insertQueries.append(insertCharacter.arg("2, 'Bob'"));
     insertQueries.append(insertCharacter.arg("3, 'James'"));
     insertQueries.append(insertCharacter.arg("4, 'David'"));
     insertQueries.append(insertCharacter.arg("5, 'Terence'"));
 
-    QString insertWriter(insert.arg(WritersTable).arg("name"));
+    QString insertWriter(insert.arg(tableName(Writer)).arg("name"));
     insertQueries.append(insertWriter.arg("1, 'Jonas'"));
     insertQueries.append(insertWriter.arg("2, 'Gelo'"));
 
-    QString insertConversation(insert.arg(ConversationsTable).arg("conversation_type_id, writer_id, name"));
+    QString insertConversation(insert.arg(tableName(Conversation)).arg("conversation_type_id, writer_id, name"));
     insertQueries.append(insertConversation.arg("1, 1, 1, 'First Meeting'"));
     insertQueries.append(insertConversation.arg("2, 2, 2, 'Drunken Reunion'"));
 
-    QString insertConversationEvent(insert.arg(ConversationsEventsTable).arg("conversation_id, event_id, sort"));
+    QString insertConversationEvent(insert.arg(tableName(ConversationEvent)).arg("conversation_id, event_id, sort"));
     insertQueries.append(insertConversationEvent.arg("1, 1, 1, 1"));
     insertQueries.append(insertConversationEvent.arg("2, 2, 2, 2"));
 
-    QString insertEvent(insert.arg(EventsTable).arg("event_type_id, character_id, conversation_id, audiofile, text"));
+    QString insertEvent(insert.arg(tableName(Event)).arg("event_type_id, character_id, conversation_id, audiofile, text"));
     insertQueries.append(insertEvent.arg("1, 1, 1, 1, '1.mp4', 'Hey dude, how is it going?'"));
     insertQueries.append(insertEvent.arg("2, 1, 2, 2, '2.mp3', 'Fine day today, eh?'"));
     insertQueries.append(insertEvent.arg("3, 1, 3, 1, '3.wav', 'Is your face always that colour?'"));
     insertQueries.append(insertEvent.arg("4, 1, 4, 2, '4.mp3', 'Why would you say that?'"));
     insertQueries.append(insertEvent.arg("5, 1, 5, 1, '5.mp3', 'I slap your face!'"));
 
-    QString insertConversationType(insert.arg(ConversationTypesTable).arg("name"));
+    QString insertConversationType(insert.arg(tableName(ConversationType)).arg("name"));
     insertQueries.append(insertConversationType.arg("1, 'Interactive'"));
     insertQueries.append(insertConversationType.arg("2, 'Overhead'"));
     insertQueries.append(insertConversationType.arg("3, 'Subsequent'"));
     insertQueries.append(insertConversationType.arg("4, 'AI Bark'"));
 
-    QString insertEventType(insert.arg(EventTypesTable).arg("name"));
+    QString insertEventType(insert.arg(tableName(EventType)).arg("name"));
     insertQueries.append(insertEventType.arg("1, 'Speech'"));
     insertQueries.append(insertEventType.arg("2, 'Logic'"));
     insertQueries.append(insertEventType.arg("3, 'Comment'"));
@@ -165,25 +153,35 @@ bool Database::insertDummyData()
     return true;
 }
 
-QMap<int, QSqlRelation> Database::tableRelations(const QLatin1String &table)
+QString Database::tableName(Table table)
 {
-    static QMap<QLatin1String, QMap<int, QSqlRelation> > relations;
+    Q_ASSERT(staticMetaObject.enumeratorCount() == 1);
+    QMetaEnum enumerator =
+            staticMetaObject.enumerator(staticMetaObject.enumeratorOffset());
+    QString tableName(enumerator.valueToKey(table));
+    Q_ASSERT(!tableName.isEmpty());
+    return tableName;
+}
+
+QMap<int, QSqlRelation> Database::tableRelations(Table table)
+{
+    static QMap<Table, QMap<int, QSqlRelation> > relations;
     if (relations.isEmpty()) {
         QMap<int, QSqlRelation> conversationsRelations;
-        conversationsRelations.insert(1, QSqlRelation(ConversationTypesTable, "id", "name"));
-        conversationsRelations.insert(2, QSqlRelation(WritersTable, "id", "name"));
-        relations.insert(ConversationsTable, conversationsRelations);
+        conversationsRelations.insert(1, QSqlRelation(tableName(ConversationType), "id", "name"));
+        conversationsRelations.insert(2, QSqlRelation(tableName(Writer), "id", "name"));
+        relations.insert(Conversation, conversationsRelations);
 
         QMap<int, QSqlRelation> conversationsEventsRelations;
-        conversationsEventsRelations.insert(1, QSqlRelation(ConversationsTable, "id", "name"));
-        conversationsEventsRelations.insert(2, QSqlRelation(EventsTable, "id", "text"));
-        relations.insert(ConversationsEventsTable, conversationsEventsRelations);
+        conversationsEventsRelations.insert(1, QSqlRelation(tableName(Conversation), "id", "name"));
+        conversationsEventsRelations.insert(2, QSqlRelation(tableName(Event), "id", "text"));
+        relations.insert(ConversationEvent, conversationsEventsRelations);
 
         QMap<int, QSqlRelation> eventsRelations;
-        eventsRelations.insert(1, QSqlRelation(EventTypesTable, "id", "name"));
-        eventsRelations.insert(2, QSqlRelation(CharactersTable, "id", "name"));
-        eventsRelations.insert(3, QSqlRelation(ConversationsTable, "id", "name"));
-        relations.insert(EventsTable, eventsRelations);
+        eventsRelations.insert(1, QSqlRelation(tableName(EventType), "id", "name"));
+        eventsRelations.insert(2, QSqlRelation(tableName(Character), "id", "name"));
+        eventsRelations.insert(3, QSqlRelation(tableName(Conversation), "id", "name"));
+        relations.insert(Event, eventsRelations);
     }
 
     return relations.value(table);

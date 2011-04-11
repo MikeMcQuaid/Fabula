@@ -87,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     eventsModel = new QSqlRelationalTableModel();
     eventsModel->setObjectName("eventsModel");
-    eventsModel->setTable(EventsTable);
+    eventsModel->setTable(Database::tableName(Database::Event));
 
     // TODO: Get these columns from database
     eventsModel->setHeaderData(0, Qt::Horizontal, tr("ID"));
@@ -97,7 +97,7 @@ MainWindow::MainWindow(QWidget *parent) :
     eventsModel->setHeaderData(4, Qt::Horizontal, tr("Audio File"));
     eventsModel->setHeaderData(5, Qt::Horizontal, tr("Text"));
 
-    QMap<int, QSqlRelation> eventsRelations = database->tableRelations(EventsTable);
+    QMap<int, QSqlRelation> eventsRelations = database->tableRelations(Database::Event);
     foreach(int column, eventsRelations.keys())
         eventsModel->setRelation(column, eventsRelations.value(column));
 
@@ -116,9 +116,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     conversationsTableModel = new QSqlRelationalTableModel();
     conversationsTableModel->setObjectName("conversationsTableModel");
-    conversationsTableModel->setTable(ConversationsTable);
+    conversationsTableModel->setTable(Database::tableName(Database::Conversation));
 
-    QMap<int, QSqlRelation> conversationsRelations = database->tableRelations(ConversationsTable);
+    QMap<int, QSqlRelation> conversationsRelations = database->tableRelations(Database::Conversation);
     foreach(int column, conversationsRelations.keys())
         conversationsTableModel->setRelation(column, conversationsRelations.value(column));
 
@@ -126,7 +126,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     charactersTableModel = new QSqlRelationalTableModel();
     charactersTableModel->setObjectName("charactersTableModel");
-    charactersTableModel->setTable(CharactersTable);
+    charactersTableModel->setTable(Database::tableName(Database::Character));
     charactersTableModel->select();
 
     HideColumnsProxyModel *hideEventsTableColumnsModel = new HideColumnsProxyModel(this);
