@@ -24,6 +24,9 @@
 #include <QStringList>
 #include <QDebug>
 #include <QMetaEnum>
+#include <QSqlTableModel>
+#include <QSqlRecord>
+#include <QMultiMap>
 
 Database::Database(const QString &path, QObject *parent) :
         QObject(parent)
@@ -99,56 +102,86 @@ bool Database::create()
 #endif
 }
 
+bool Database::insertTableRow(Table table, const QStringList& values)
+{
+    QSqlTableModel model;
+    model.setTable(tableName(table));
+    QSqlDatabase database = QSqlDatabase::database();
+    QSqlRecord record = database.record(model.tableName());
+
+    Q_ASSERT(values.count() == record.count());
+    for(int field=0; field < record.count(); ++field)
+        record.setValue(field, values.at(field));
+
+    bool inserted = model.insertRecord(-1, record);
+    if (!inserted)
+        qWarning() << QObject::tr("Unable to run insert data:")
+                   << model.lastError().text();
+
+    return inserted;
+}
+
 bool Database::insertTestData()
 {
-    QStringList insertQueries;
-    QString insert("insert into %1(id, %2) values (%3)");
+    QMap<Table, QStringList> testData;
+    Table table;
+    QStringList tableValues;
 
-    QString insertCharacter(insert.arg(tableName(Character)).arg("name"));
-    insertQueries.append(insertCharacter.arg("1, 'Mike'"));
-    insertQueries.append(insertCharacter.arg("2, 'Bob'"));
-    insertQueries.append(insertCharacter.arg("3, 'James'"));
-    insertQueries.append(insertCharacter.arg("4, 'David'"));
-    insertQueries.append(insertCharacter.arg("5, 'Terence'"));
+    table = Character;
+    tableValues.append("1, Mike");
+    tableValues.append("2, Bob");
+    tableValues.append("3, James");
+    tableValues.append("4, David");
+    tableValues.append("5, Terence");
+    testData.insert(table, tableValues);
+    tableValues.clear();
 
-    QString insertWriter(insert.arg(tableName(Writer)).arg("name"));
-    insertQueries.append(insertWriter.arg("1, 'Jonas'"));
-    insertQueries.append(insertWriter.arg("2, 'Gelo'"));
+    table = Writer;
+    tableValues.append("1, Jonas");
+    tableValues.append("2, Gelo");
+    testData.insert(table, tableValues);
+    tableValues.clear();
 
-    QString insertConversation(insert.arg(tableName(Conversation)).arg("conversation_type_id, writer_id, name"));
-    insertQueries.append(insertConversation.arg("1, 1, 1, 'First Meeting'"));
-    insertQueries.append(insertConversation.arg("2, 2, 2, 'Drunken Reunion'"));
+    table = Conversation;
+    tableValues.append("1, 1, 1, First Meeting");
+    tableValues.append("2, 2, 2, Drunken Reunion");
+    testData.insert(table, tableValues);
+    tableValues.clear();
 
-    QString insertConversationEvent(insert.arg(tableName(ConversationEvent)).arg("conversation_id, event_id, sort"));
-    insertQueries.append(insertConversationEvent.arg("1, 1, 1, 1"));
-    insertQueries.append(insertConversationEvent.arg("2, 2, 2, 2"));
+    table = ConversationEvent;
+    tableValues.append("1, 1, 1, 1");
+    tableValues.append("2, 2, 2, 2");
+    testData.insert(table, tableValues);
+    tableValues.clear();
 
-    QString insertEvent(insert.arg(tableName(Event)).arg("event_type_id, character_id, conversation_id, audiofile, text"));
-    insertQueries.append(insertEvent.arg("1, 1, 1, 1, '1.mp4', 'Hey dude, how is it going?'"));
-    insertQueries.append(insertEvent.arg("2, 1, 2, 2, '2.mp3', 'Fine day today, eh?'"));
-    insertQueries.append(insertEvent.arg("3, 1, 3, 1, '3.wav', 'Is your face always that colour?'"));
-    insertQueries.append(insertEvent.arg("4, 1, 4, 2, '4.mp3', 'Why would you say that?'"));
-    insertQueries.append(insertEvent.arg("5, 1, 5, 1, '5.mp3', 'I slap your face!'"));
+    table = Event;
+    tableValues.append("1, 1, 1, 1, 1.mp4, Hey dude! How is it going?");
+    tableValues.append("2, 1, 2, 2, 2.mp3, Fine day today?");
+    tableValues.append("3, 1, 3, 1, 3.wav, Is your face always that colour?");
+    tableValues.append("4, 1, 4, 2, 4.mp3, Why would you say that?");
+    tableValues.append("5, 1, 5, 1, 5.mp3, I slap your face!");
+    testData.insert(table, tableValues);
+    tableValues.clear();
 
-    QString insertConversationType(insert.arg(tableName(ConversationType)).arg("name"));
-    insertQueries.append(insertConversationType.arg("1, 'Interactive'"));
-    insertQueries.append(insertConversationType.arg("2, 'Overhead'"));
-    insertQueries.append(insertConversationType.arg("3, 'Subsequent'"));
-    insertQueries.append(insertConversationType.arg("4, 'AI Bark'"));
+    table = ConversationType;
+    tableValues.append("1, Interactive");
+    tableValues.append("2, Overhead");
+    tableValues.append("3, Subsequent");
+    tableValues.append("4, AI Bark");
+    testData.insert(table, tableValues);
+    tableValues.clear();
 
-    QString insertEventType(insert.arg(tableName(EventType)).arg("name"));
-    insertQueries.append(insertEventType.arg("1, 'Speech'"));
-    insertQueries.append(insertEventType.arg("2, 'Logic'"));
-    insertQueries.append(insertEventType.arg("3, 'Comment'"));
+    table = EventType;
+    tableValues.append("1, Speech");
+    tableValues.append("2, Logic");
+    tableValues.append("3, Comment");
+    testData.insert(table, tableValues);
+    tableValues.clear();
 
-    QSqlQuery sqlQuery;
-    foreach(const QString &query, insertQueries) {
-        if (!sqlQuery.exec(query)) {
-            qWarning() << tr("Unable to run insertion: '%1'").arg(query);
-            qWarning() << sqlQuery.lastError().text();
-            return false;
-        }
-    }
+    foreach(Table table, testData.keys())
+        foreach(const QString &value, testData.value(table))
+            if (!insertTableRow(table, value.split(", ")))
+                return false;
 
     return true;
 }
@@ -189,5 +222,5 @@ QMap<int, QSqlRelation> Database::tableRelations(Table table)
 
 Database::~Database()
 {
-    QSqlDatabase::removeDatabase("qt_sql_default_connection");
+    QSqlDatabase::removeDatabase(QSqlDatabase::database().connectionName());
 }

@@ -21,6 +21,7 @@
 #include <QObject>
 #include <QMap>
 #include <QSqlRelation>
+#include <QStringList>
 
 class Database : public QObject
 {
@@ -45,6 +46,7 @@ public:
 private:
     bool create();
     bool insertTestData();
+    bool insertTableRow(Table table, const QStringList& values);
 };
 
 #endif // DATABASE_H
