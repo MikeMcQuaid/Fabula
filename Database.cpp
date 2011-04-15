@@ -26,7 +26,9 @@
 #include <QMetaEnum>
 #include <QSqlTableModel>
 #include <QSqlRecord>
-#include <QMultiMap>
+#include <QMap>
+#include <QSqlField>
+#include <QVariant>
 
 Database::Database(const QString &path, QObject *parent) :
         QObject(parent)
@@ -53,42 +55,119 @@ Database::Database(const QString &path, QObject *parent) :
 
 bool Database::create()
 {
+    QSqlField id("ID", QVariant::Int);
+    id.setAutoValue(true);
+    //FIXME: unique?
+    QSqlField name("Name", QVariant::String);
+
+    QMap<Table, QSqlRecord> tables;
+
+    QSqlRecord idNameTable;
+    idNameTable.append(id);
+    idNameTable.append(name);
+    tables.insert(Character, idNameTable);
+    tables.insert(Writer, idNameTable);
+    tables.insert(ConversationType, idNameTable);
+    tables.insert(EventType, idNameTable);
+
+    QSqlRecord conversation;
+    conversation.append(id);
+    conversation.append(QSqlField("Conversation Type ID", QVariant::Int));
+    conversation.append(QSqlField("Writer ID", QVariant::Int));
+    conversation.append(name);
+    tables.insert(Conversation, conversation);
+
+    QSqlRecord conversationEvent;
+    conversationEvent.append(id);
+    conversationEvent.append(QSqlField("Conversation ID", QVariant::Int));
+    conversationEvent.append(QSqlField("Event ID", QVariant::Int));
+    conversationEvent.append(QSqlField("Order", QVariant::Int));
+    tables.insert(ConversationEvent, conversationEvent);
+
+    QSqlRecord event;
+    event.append(id);
+    event.append(QSqlField("Event Type ID", QVariant::Int));
+    event.append(QSqlField("Character ID", QVariant::Int));
+    event.append(QSqlField("Conversation ID", QVariant::Int));
+    event.append(QSqlField("Audio File", QVariant::String));
+    event.append(QSqlField("Text", QVariant::String));
+    tables.insert(Event, event);
+
+    foreach(Table table, tables.keys()) {
+        const QSqlRecord& record = tables.value(table);
+        QStringList fieldQueries;
+        QString name = tableName(table);
+        for(int fieldIndex=0; fieldIndex < record.count(); ++fieldIndex) {
+            QSqlField field = record.field(fieldIndex);
+            QString fieldName = field.name();
+            QString typeName;
+            switch (field.type()) {
+                case QVariant::Int:
+                    typeName = "int";
+                    break;
+                case QVariant::String:
+                default:
+                    Q_ASSERT(field.type() == QVariant::String);
+                    typeName = "text";
+                    break;
+            }
+
+            QString primaryKey;
+            if (field.isAutoValue())
+                primaryKey = " primary key autoincrement";
+
+            QString fieldQuery = QString("'%1'' %2%3").arg(fieldName);
+            fieldQuery = fieldQuery.arg(typeName).arg(primaryKey);
+            fieldQueries.insert(fieldIndex, fieldQuery);
+        }
+        QString tableQuery = QString("CREATE TABLE %1(%2)");
+        tableQuery = tableQuery.arg(name);
+        tableQuery = tableQuery.arg(fieldQueries.join(", "));
+        QSqlQuery sqlQuery(tableQuery);
+        if (sqlQuery.exec()) {
+            qWarning() << tableQuery;
+            qWarning() << tr("Unable to create '%1' table:").arg(name);
+            qWarning() << sqlQuery.lastError().text();
+            return false;
+        }
+    }
+
     QMap<QString, QString> databaseStructure;
     databaseStructure.insert(tableName(Character),
-                             "id integer primary key autoincrement, "
-                             "name text unique");
+                             "ID integer primary key autoincrement, "
+                             "Name text unique");
     databaseStructure.insert(tableName(Writer),
-                             "id integer primary key autoincrement, "
-                             "name text unique");
-    databaseStructure.insert(tableName(Conversation),
-                             "id integer primary key autoincrement, "
-                             "conversation_type_id integer not null, "
-                             "writer_id integer not null, "
-                             "name text unique");
-    databaseStructure.insert(tableName(ConversationEvent),
-                             "id integer primary key autoincrement, "
-                             "conversation_id integer not null, "
-                             "event_id integer not null, "
-                             "sort integer not null");
-    databaseStructure.insert(tableName(Event),
-                             "id integer primary key autoincrement, "
-                             "event_type_id integer not null, "
-                             "character_id integer, "
-                             "conversation_id integer not null, "
-                             "audiofile text unique, "
-                             "text text");
+                             "ID integer primary key autoincrement, "
+                             "Name text unique");
     databaseStructure.insert(tableName(ConversationType),
-                             "id integer primary key autoincrement, "
-                             "name text unique");
+                             "ID integer primary key autoincrement, "
+                             "Name text unique");
     databaseStructure.insert(tableName(EventType),
-                             "id integer primary key autoincrement, "
-                             "name text unique");
+                             "ID integer primary key autoincrement, "
+                             "Name text unique");
+    databaseStructure.insert(tableName(Conversation),
+                             "ID integer primary key autoincrement, "
+                             "'Converation Type ID' integer not null, "
+                             "'Writer ID' integer not null, "
+                             "Name text unique");
+    databaseStructure.insert(tableName(ConversationEvent),
+                             "ID integer primary key autoincrement, "
+                             "'Conversation ID' integer not null, "
+                             "'Event ID' integer not null, "
+                             "'Sort Order' integer not null");
+    databaseStructure.insert(tableName(Event),
+                             "ID integer primary key autoincrement, "
+                             "'Event Type ID' integer not null, "
+                             "'Character ID' integer, "
+                             "'Conversation ID' integer not null, "
+                             "'Audio File' text unique, "
+                             "Text text");
     QSqlQuery sqlQuery;
     foreach(const QString &tableName, databaseStructure.keys()) {
         QString query = "create table %1(%2)";
         query = query.arg(tableName);
         query = query.arg(databaseStructure.value(tableName));
-        if (!sqlQuery.exec(query)) {
+        if (false /*!sqlQuery.exec(query)*/) {
             qWarning() << tr("Unable to create '%1' table:").arg(tableName);
             qWarning() << sqlQuery.lastError().text();
             return false;
@@ -201,19 +280,19 @@ QMap<int, QSqlRelation> Database::tableRelations(Table table)
     static QMap<Table, QMap<int, QSqlRelation> > relations;
     if (relations.isEmpty()) {
         QMap<int, QSqlRelation> conversationsRelations;
-        conversationsRelations.insert(1, QSqlRelation(tableName(ConversationType), "id", "name"));
-        conversationsRelations.insert(2, QSqlRelation(tableName(Writer), "id", "name"));
+        conversationsRelations.insert(1, QSqlRelation(tableName(ConversationType), "ID", "Name"));
+        conversationsRelations.insert(2, QSqlRelation(tableName(Writer), "ID", "Name"));
         relations.insert(Conversation, conversationsRelations);
 
         QMap<int, QSqlRelation> conversationsEventsRelations;
-        conversationsEventsRelations.insert(1, QSqlRelation(tableName(Conversation), "id", "name"));
-        conversationsEventsRelations.insert(2, QSqlRelation(tableName(Event), "id", "text"));
+        conversationsEventsRelations.insert(1, QSqlRelation(tableName(Conversation), "ID", "Name"));
+        conversationsEventsRelations.insert(2, QSqlRelation(tableName(Event), "ID", "Text"));
         relations.insert(ConversationEvent, conversationsEventsRelations);
 
         QMap<int, QSqlRelation> eventsRelations;
-        eventsRelations.insert(1, QSqlRelation(tableName(EventType), "id", "name"));
-        eventsRelations.insert(2, QSqlRelation(tableName(Character), "id", "name"));
-        eventsRelations.insert(3, QSqlRelation(tableName(Conversation), "id", "name"));
+        eventsRelations.insert(1, QSqlRelation(tableName(EventType), "ID", "Name"));
+        eventsRelations.insert(2, QSqlRelation(tableName(Character), "ID", "Name"));
+        eventsRelations.insert(3, QSqlRelation(tableName(Conversation), "ID", "Name"));
         relations.insert(Event, eventsRelations);
     }
 

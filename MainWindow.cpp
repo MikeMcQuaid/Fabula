@@ -90,12 +90,9 @@ MainWindow::MainWindow(QWidget *parent) :
     eventsModel->setTable(Database::tableName(Database::Event));
 
     // TODO: Get these columns from database
-    eventsModel->setHeaderData(0, Qt::Horizontal, tr("ID"));
     eventsModel->setHeaderData(1, Qt::Horizontal, tr("Type"));
     eventsModel->setHeaderData(2, Qt::Horizontal, tr("Character"));
     eventsModel->setHeaderData(3, Qt::Horizontal, tr("Conversation"));
-    eventsModel->setHeaderData(4, Qt::Horizontal, tr("Audio File"));
-    eventsModel->setHeaderData(5, Qt::Horizontal, tr("Text"));
 
     QMap<int, QSqlRelation> eventsRelations = database->tableRelations(Database::Event);
     foreach(int column, eventsRelations.keys())
