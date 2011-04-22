@@ -40,6 +40,10 @@ public:
     };
     Q_ENUMS(Table)
 
+    QSqlRelationalTableModel *events();
+    QSqlRelationalTableModel *conversations();
+    QSqlRelationalTableModel *characters();
+
     static QString tableName(Table table);
     static QMap<int, QSqlRelation> tableRelations(Table table);
 
@@ -51,6 +55,9 @@ private:
                           bool required = true, bool autoValue = false,
                           int length = 0);
 
+    QSqlRelationalTableModel *eventsModel;
+    QSqlRelationalTableModel *conversationsTableModel;
+    QSqlRelationalTableModel *charactersTableModel;
 };
 
 #endif // DATABASE_H

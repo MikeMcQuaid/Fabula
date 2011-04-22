@@ -82,13 +82,10 @@ protected:
 private:
     Ui::MainWindow *ui;
     Database *database;
-    QSqlRelationalTableModel *eventsModel;
-    QSortFilterProxyModel *eventsFilterModel;
     QSettings settings;
     QDesktopServices desktopServices;
+    QSortFilterProxyModel *eventsFilterModel;
     TableToTreeProxyModel *conversationsTreeModel;
-    QSqlRelationalTableModel *conversationsTableModel;
-    QSqlRelationalTableModel *charactersTableModel;
 };
 
 #endif // MAINWINDOW_H

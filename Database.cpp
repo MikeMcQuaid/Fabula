@@ -31,7 +31,10 @@
 #include <QVariant>
 
 Database::Database(const QString &path, QObject *parent) :
-        QObject(parent)
+    QObject(parent),
+    eventsModel(0),
+    conversationsTableModel(0),
+    charactersTableModel(0)
 {
     if (!QSqlDatabase::isDriverAvailable("QSQLITE")) {
         qWarning() << tr("Unable to find Qt SQLite plugin.");
@@ -51,6 +54,51 @@ Database::Database(const QString &path, QObject *parent) :
             return;
         }
     }
+
+    eventsModel = new QSqlRelationalTableModel();
+    eventsModel->setObjectName("eventsModel");
+    eventsModel->setTable(Database::tableName(Database::Event));
+
+    // TODO: Get these columns from database
+    eventsModel->setHeaderData(1, Qt::Horizontal, tr("Type"));
+    eventsModel->setHeaderData(2, Qt::Horizontal, tr("Character"));
+    eventsModel->setHeaderData(3, Qt::Horizontal, tr("Conversation"));
+
+    QMap<int, QSqlRelation> eventsRelations = tableRelations(Database::Event);
+    foreach(int column, eventsRelations.keys())
+        eventsModel->setRelation(column, eventsRelations.value(column));
+
+    eventsModel->select();
+
+    conversationsTableModel = new QSqlRelationalTableModel();
+    conversationsTableModel->setObjectName("conversationsTableModel");
+    conversationsTableModel->setTable(Database::tableName(Database::Conversation));
+
+    QMap<int, QSqlRelation> conversationsRelations = tableRelations(Database::Conversation);
+    foreach(int column, conversationsRelations.keys())
+        conversationsTableModel->setRelation(column, conversationsRelations.value(column));
+
+    conversationsTableModel->select();
+
+    charactersTableModel = new QSqlRelationalTableModel();
+    charactersTableModel->setObjectName("charactersTableModel");
+    charactersTableModel->setTable(Database::tableName(Database::Character));
+    charactersTableModel->select();
+}
+
+QSqlRelationalTableModel *Database::events()
+{
+    return eventsModel;
+}
+
+QSqlRelationalTableModel *Database::conversations()
+{
+    return conversationsTableModel;
+}
+
+QSqlRelationalTableModel *Database::characters()
+{
+    return charactersTableModel;
 }
 
 QSqlField Database::createField(QString name, QVariant::Type type,
