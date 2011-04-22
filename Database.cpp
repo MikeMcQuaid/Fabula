@@ -53,12 +53,22 @@ Database::Database(const QString &path, QObject *parent) :
     }
 }
 
+QSqlField Database::createField(QString name, QVariant::Type type,
+                                bool required, bool autoValue, int length)
+{
+    QSqlField field(name, type);
+    field.setAutoValue(autoValue);
+    field.setRequired(required);
+    if (length)
+        field.setLength(length);
+    return field;
+}
+
+
 bool Database::create()
 {
-    QSqlField id("ID", QVariant::Int);
-    id.setAutoValue(true);
-    //FIXME: unique?
-    QSqlField name("Name", QVariant::String);
+    QSqlField id = createField("ID", QVariant::Int, true, true, true);
+    QSqlField name = createField("Name", QVariant::String, true, false, 50);
 
     QMap<Table, QSqlRecord> tables;
 
@@ -72,25 +82,25 @@ bool Database::create()
 
     QSqlRecord conversation;
     conversation.append(id);
-    conversation.append(QSqlField("Conversation Type ID", QVariant::Int));
-    conversation.append(QSqlField("Writer ID", QVariant::Int));
+    conversation.append(createField("Conversation Type ID", QVariant::Int));
+    conversation.append(createField("Writer ID", QVariant::Int));
     conversation.append(name);
     tables.insert(Conversation, conversation);
 
     QSqlRecord conversationEvent;
     conversationEvent.append(id);
-    conversationEvent.append(QSqlField("Conversation ID", QVariant::Int));
-    conversationEvent.append(QSqlField("Event ID", QVariant::Int));
-    conversationEvent.append(QSqlField("Order", QVariant::Int));
+    conversationEvent.append(createField("Conversation ID", QVariant::Int));
+    conversationEvent.append(createField("Event ID", QVariant::Int));
+    conversationEvent.append(createField("Sort Order", QVariant::Int));
     tables.insert(ConversationEvent, conversationEvent);
 
     QSqlRecord event;
     event.append(id);
-    event.append(QSqlField("Event Type ID", QVariant::Int));
-    event.append(QSqlField("Character ID", QVariant::Int));
-    event.append(QSqlField("Conversation ID", QVariant::Int));
-    event.append(QSqlField("Audio File", QVariant::String));
-    event.append(QSqlField("Text", QVariant::String));
+    event.append(createField("Event Type ID", QVariant::Int));
+    event.append(createField("Character ID", QVariant::Int, false));
+    event.append(createField("Conversation ID", QVariant::Int));
+    event.append(createField("Audio File", QVariant::String, true, false, 255));
+    event.append(createField("Text", QVariant::String));
     tables.insert(Event, event);
 
     foreach(Table table, tables.keys()) {
@@ -103,7 +113,7 @@ bool Database::create()
             QString typeName;
             switch (field.type()) {
                 case QVariant::Int:
-                    typeName = "int";
+                    typeName = "integer";
                     break;
                 case QVariant::String:
                 default:
@@ -116,60 +126,27 @@ bool Database::create()
             if (field.isAutoValue())
                 primaryKey = " primary key autoincrement";
 
-            QString fieldQuery = QString("'%1'' %2%3").arg(fieldName);
+            QString notNull;
+            if (field.requiredStatus() == QSqlField::Required)
+                notNull = " not null";
+
+            QString unique;
+            if (field.length() > 1)
+                unique = " unique";
+
+            QString fieldQuery = QString("'%1' %2%3%4%5").arg(fieldName);
             fieldQuery = fieldQuery.arg(typeName).arg(primaryKey);
+            fieldQuery = fieldQuery.arg(notNull).arg(unique);
             fieldQueries.insert(fieldIndex, fieldQuery);
         }
         QString tableQuery = QString("CREATE TABLE %1(%2)");
         tableQuery = tableQuery.arg(name);
         tableQuery = tableQuery.arg(fieldQueries.join(", "));
-        QSqlQuery sqlQuery(tableQuery);
-        if (sqlQuery.exec()) {
+        QSqlQuery sqlQuery;
+        if (!sqlQuery.exec(tableQuery)) {
             qWarning() << tableQuery;
             qWarning() << tr("Unable to create '%1' table:").arg(name);
-            qWarning() << sqlQuery.lastError().text();
-            return false;
-        }
-    }
-
-    QMap<QString, QString> databaseStructure;
-    databaseStructure.insert(tableName(Character),
-                             "ID integer primary key autoincrement, "
-                             "Name text unique");
-    databaseStructure.insert(tableName(Writer),
-                             "ID integer primary key autoincrement, "
-                             "Name text unique");
-    databaseStructure.insert(tableName(ConversationType),
-                             "ID integer primary key autoincrement, "
-                             "Name text unique");
-    databaseStructure.insert(tableName(EventType),
-                             "ID integer primary key autoincrement, "
-                             "Name text unique");
-    databaseStructure.insert(tableName(Conversation),
-                             "ID integer primary key autoincrement, "
-                             "'Converation Type ID' integer not null, "
-                             "'Writer ID' integer not null, "
-                             "Name text unique");
-    databaseStructure.insert(tableName(ConversationEvent),
-                             "ID integer primary key autoincrement, "
-                             "'Conversation ID' integer not null, "
-                             "'Event ID' integer not null, "
-                             "'Sort Order' integer not null");
-    databaseStructure.insert(tableName(Event),
-                             "ID integer primary key autoincrement, "
-                             "'Event Type ID' integer not null, "
-                             "'Character ID' integer, "
-                             "'Conversation ID' integer not null, "
-                             "'Audio File' text unique, "
-                             "Text text");
-    QSqlQuery sqlQuery;
-    foreach(const QString &tableName, databaseStructure.keys()) {
-        QString query = "create table %1(%2)";
-        query = query.arg(tableName);
-        query = query.arg(databaseStructure.value(tableName));
-        if (false /*!sqlQuery.exec(query)*/) {
-            qWarning() << tr("Unable to create '%1' table:").arg(tableName);
-            qWarning() << sqlQuery.lastError().text();
+            qWarning() << sqlQuery.lastError();
             return false;
         }
     }

@@ -47,6 +47,10 @@ private:
     bool create();
     bool insertTestData();
     bool insertTableRow(Table table, const QStringList& values);
+    QSqlField createField(QString name, QVariant::Type type,
+                          bool required = true, bool autoValue = false,
+                          int length = 0);
+
 };
 
 #endif // DATABASE_H
