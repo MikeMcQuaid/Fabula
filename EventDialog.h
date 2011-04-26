@@ -24,7 +24,7 @@ public:
 private slots:
     void changedEventType(const QString &eventType);
     void chooseAudioFile();
-    void playAudioFile();
+    void playAudioFile(bool play);
     void audioFileChanged(const QString &audioFile);
 
 private:

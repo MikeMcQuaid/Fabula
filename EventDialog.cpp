@@ -33,14 +33,14 @@ EventDialog::EventDialog(QSqlRelationalTableModel *model, QWidget *parent) :
 
     connect(ui->typeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(changedEventType(QString)));
     connect(ui->audioFileBrowseButton, SIGNAL(clicked()), this, SLOT(chooseAudioFile()));
-    connect(ui->audioFilePlayButton, SIGNAL(clicked()), this, SLOT(playAudioFile()));
+    connect(ui->audioFilePlayButton, SIGNAL(toggled(bool)), this, SLOT(playAudioFile(bool)));
     connect(ui->audioFileLineEdit, SIGNAL(textChanged(QString)), this, SLOT(audioFileChanged(QString)));
 
     setupWidgets();
 
-    //audioFilePlayer = new Phonon::MediaObject(this);
-    //Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
-    //Phonon::createPath(audioFilePlayer, audioOutput);
+    audioFilePlayer = new Phonon::MediaObject(this);
+    Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
+    Phonon::createPath(audioFilePlayer, audioOutput);
 }
 
 void EventDialog::changedEventType(const QString &eventType)
@@ -56,8 +56,7 @@ void EventDialog::chooseAudioFile()
         return;
 
     ui->audioFileLineEdit->setText(audioFile);
-    if (audioFilePlayer)
-        audioFilePlayer->setCurrentSource(audioFile);
+    audioFileChanged(audioFile);
 }
 
 void EventDialog::audioFileChanged(const QString &audioFile)
@@ -66,12 +65,20 @@ void EventDialog::audioFileChanged(const QString &audioFile)
         audioFilePlayer->setCurrentSource(audioFile);
 }
 
-void EventDialog::playAudioFile()
+void EventDialog::playAudioFile(bool play)
 {
-    audioFilePlayer->play();
+    if (play) {
+        audioFilePlayer->play();
+        ui->audioFilePlayButton->setText(tr("Stop"));
+    }
+    else {
+        audioFilePlayer->stop();
+        ui->audioFilePlayButton->setText(tr("Play"));
+    }
 }
 
 EventDialog::~EventDialog()
 {
+    playAudioFile(false);
     delete ui;
 }

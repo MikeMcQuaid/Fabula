@@ -310,8 +310,9 @@ void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog
     if (mode == NewMode && result == QDialog::Rejected) {
         bool rowWasRemoved = model->removeRow(row);
         Q_UNUSED(rowWasRemoved);
-	Q_ASSERT(rowWasRemoved);
+        Q_ASSERT(rowWasRemoved);
     }
+    delete dialog;
 }
 
 void MainWindow::deleteViewItem(const QModelIndex &index, QSqlRelationalTableModel *model)
