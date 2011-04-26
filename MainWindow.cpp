@@ -224,18 +224,18 @@ void MainWindow::addOrEditTreeItem(DialogMode mode, TreeItem treeItem, const QMo
 
     switch (treeItem) {
         case CharacterItem:
-        eventsTableColumn = 2;
-        itemTableNameColumn = 1;
-        tableModel = database->characters();
-        tableDialog = new CharacterDialog(database->characters(), this);
-        break;
+            eventsTableColumn = 2;
+            itemTableNameColumn = 1;
+            tableModel = database->characters();
+            tableDialog = new CharacterDialog(database->characters(), this);
+            break;
 
-    case ConversationItem:
-        eventsTableColumn = 3;
-        itemTableNameColumn = 3;
-        tableModel = database->conversations();
-        tableDialog = new ConversationDialog(database->conversations(), this);
-        break;
+        case ConversationItem:
+            eventsTableColumn = 3;
+            itemTableNameColumn = 3;
+            tableModel = database->conversations();
+            tableDialog = new ConversationDialog(database->conversations(), this);
+            break;
     }
 
     QModelIndex eventsIndex =
