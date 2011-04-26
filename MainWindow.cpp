@@ -227,14 +227,14 @@ void MainWindow::addOrEditTreeItem(DialogMode mode, TreeItem treeItem, const QMo
             eventsTableColumn = 2;
             itemTableNameColumn = 1;
             tableModel = database->characters();
-            tableDialog = new CharacterDialog(database->characters(), this);
+            tableDialog = new CharacterDialog(tableModel, this);
             break;
 
         case ConversationItem:
             eventsTableColumn = 3;
             itemTableNameColumn = 3;
             tableModel = database->conversations();
-            tableDialog = new ConversationDialog(database->conversations(), this);
+            tableDialog = new ConversationDialog(tableModel, this);
             break;
     }
 
@@ -313,6 +313,8 @@ void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog
         Q_ASSERT(rowWasRemoved);
     }
     delete dialog;
+
+    reloadEvents();
 }
 
 void MainWindow::deleteViewItem(const QModelIndex &index, QSqlRelationalTableModel *model)
