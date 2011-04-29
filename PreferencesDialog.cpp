@@ -14,10 +14,12 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
     ui->setupUi(this);
     QSqlTableModel *writersModel = new QSqlTableModel(this);
     writersModel->setTable(Database::tableName(Database::Writer));
-    writersModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    //writersModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
     writersModel->select();
     ui->writerComboBox->setModel(writersModel);
     ui->writerComboBox->setModelColumn(1);
+
+    setWindowModality(Qt::WindowModal);
 
     load();
 
@@ -26,6 +28,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
 
 PreferencesDialog::~PreferencesDialog()
 {
+    save();
     delete ui;
 }
 
@@ -35,10 +38,19 @@ void PreferencesDialog::open()
     QDialog::open();
 }
 
+void PreferencesDialog::close()
+{
+    save();
+    QDialog::close();
+}
+
 void PreferencesDialog::load()
 {
-    QSettings settings;
-    QString writer = settings.value("writer").toString();
+    const QVariant writerVariant = QSettings().value("writer");
+    ui->writerNameLabel->setVisible(!writerVariant.isValid());
+    if (!writerVariant.isValid())
+        return;
+    const QString& writer = writerVariant.toString();
     int writerIndex = ui->writerComboBox->findText(writer);
     ui->writerComboBox->setCurrentIndex(writerIndex);
 }
@@ -52,8 +64,15 @@ void PreferencesDialog::save()
         return;
 
     const QString &writer = ui->writerComboBox->currentText();
-    writersModel->submitAll();
+    if (writer.isEmpty())
+        return;
 
-    QSettings settings;
-    settings.setValue("writer", writer);
+    writersModel->submitAll();
+    QSettings().setValue("writer", writer);
+}
+
+bool PreferencesDialog::haveWriter()
+{
+    return true;
+    //return QSettings().value("writer").isValid();
 }

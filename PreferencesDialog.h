@@ -17,8 +17,10 @@ public:
 
 public slots:
     void open();
+    void close();
     void load();
     void save();
+    bool haveWriter();
 
 private:
     Ui::PreferencesDialog *ui;

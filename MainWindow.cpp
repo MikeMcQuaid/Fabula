@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     database(0),
+    preferences(new PreferencesDialog()),
     eventsFilterModel(0),
     conversationsTreeModel(0)
 {
@@ -63,8 +64,6 @@ MainWindow::MainWindow(QWidget *parent) :
         splitterSizes << treeSize.toInt() << tableSize.toInt();
         ui->splitter->setSizes(splitterSizes);
     }
-
-    PreferencesDialog *preferences = new PreferencesDialog(this);
 
     connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(newFile()));
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
@@ -140,6 +139,8 @@ void MainWindow::openFile(QString fileName)
         reloadEvents();
         setWindowTitle(QString("%1 - Fabula").arg(fileName));
         ui->centralWidget->setEnabled(true);
+        if (!preferences->haveWriter())
+            preferences->open();
     }
     else {
         if (!database) {
@@ -247,11 +248,13 @@ void MainWindow::addOrEditTreeItem(DialogMode mode, TreeItem treeItem, const QMo
     QModelIndexList itemIndexes =
             tableModel->match(firstItem, Qt::DisplayRole, conversation);
 
-    Q_ASSERT(!itemIndexes.isEmpty());
-    if (itemIndexes.isEmpty())
-        return;
+    //Q_ASSERT(!itemIndexes.isEmpty());
+    //if (itemIndexes.isEmpty())
+    //    return;
 
-    QModelIndex itemIndex = itemIndexes.first();
+    QModelIndex itemIndex;
+    if (!itemIndexes.isEmpty())
+        itemIndex = itemIndexes.first();
 
     editViewItem(itemIndex, tableDialog, mode);
 }
@@ -283,10 +286,12 @@ void MainWindow::deleteCharacter()
 void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog *dialog,
                               DialogMode mode)
 {
-    const QModelIndex &rootIndex = rootModelIndex(index);
-    Q_ASSERT(rootIndex.isValid());
+    int row = 0;
 
-    const int row = rootIndex.row();
+    const QModelIndex &rootIndex = rootModelIndex(index);
+    //Q_ASSERT(rootIndex.isValid());
+    if (rootIndex.isValid())
+        row = rootIndex.row();
 
     Q_ASSERT(dialog);
     if (!dialog)
@@ -371,6 +376,7 @@ MainWindow::~MainWindow()
 {
     settings.setValue("treeSize", ui->splitter->sizes().first());
     settings.setValue("tableSize", ui->splitter->sizes().last());
+    delete preferences;
     delete ui;
     delete database;
 }

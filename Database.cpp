@@ -194,7 +194,7 @@ bool Database::create()
         if (!sqlQuery.exec(tableQuery)) {
             qWarning() << tableQuery;
             qWarning() << tr("Unable to create '%1' table:").arg(name);
-            qWarning() << sqlQuery.lastError();
+            qWarning() << sqlQuery.lastError().text();
             return false;
         }
     }

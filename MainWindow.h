@@ -31,6 +31,7 @@ namespace Ui {
 }
 
 class Database;
+class PreferencesDialog;
 class QAbstractItemView;
 class QSqlRelationalTableModel;
 class QSortFilterProxyModel;
@@ -82,6 +83,8 @@ protected:
 private:
     Ui::MainWindow *ui;
     Database *database;
+    PreferencesDialog *preferences;
+
     QSettings settings;
     QDesktopServices desktopServices;
     QSortFilterProxyModel *eventsFilterModel;
