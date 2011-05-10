@@ -76,6 +76,9 @@ void SqlRelationalTableDialog::mapComboBox(QComboBox *comboBox) {
     // This workaround is needed because QDataWidgetMapper doesn't handle
     // QSqlRelationalTableModels properly yet.
     QSqlTableModel *relationModel = m_model->relationModel(comboBoxColumn);
+    const bool selected = relationModel->select();
+    Q_UNUSED(selected);
+    Q_ASSERT(selected);
     const QString &relationColumnName = m_model->relation(comboBoxColumn).displayColumn();
     int relationColumn = relationModel->fieldIndex(relationColumnName);
     comboBox->setModel(relationModel);
