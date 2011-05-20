@@ -43,9 +43,12 @@ endif()
 set(ICONS_DIR "${${PROJECT_NAME}_SOURCE_DIR}/icons")
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-	add_definitions(-Wall -Werror -Wextra -Wold-style-cast -Wformat=2 -Winit-self -Wundef -Wpointer-arith -Wcast-qual
+	add_definitions(-Wall -Wextra -Wold-style-cast -Wformat=2 -Winit-self -Wundef -Wpointer-arith -Wcast-qual
 		-Wconversion -Wunused -Wmissing-format-attribute -Wredundant-decls -Wnon-virtual-dtor -Woverloaded-virtual
 		-Wstrict-null-sentinel -Wno-pmf-conversions -Wctor-dtor-privacy)
+	if(CMAKE_BUILD_RELEASE)
+		add_definitions(-Werror)
+	endif()
 endif()
 
 add_definitions(-DPROJECT_VERSION=\"${PROJECT_VERSION}\")
