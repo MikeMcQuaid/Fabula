@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+class QSqlTableModel;
+
 namespace Ui {
     class PreferencesDialog;
 }
@@ -14,16 +16,14 @@ class PreferencesDialog : public QDialog
 public:
     explicit PreferencesDialog(QWidget *parent = 0);
     ~PreferencesDialog();
+    static bool haveWriter();
 
 public slots:
-    void open();
-    void close();
-    void load();
-    void save();
-    bool haveWriter();
+    void accept();
 
 private:
     Ui::PreferencesDialog *ui;
+    QSqlTableModel *writersModel;
 };
 
 #endif // PREFERENCESDIALOG_H

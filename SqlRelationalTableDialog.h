@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QMap>
+#include <QSet>
 
 class QComboBox;
 class QDataWidgetMapper;
@@ -32,6 +33,7 @@ protected:
     QMap<int, QComboBox*> m_columnComboBox;
     QMap<int, QLineEdit*> m_columnLineEdit;
     QMap<int, QTextEdit*> m_columnTextEdit;
+    QSet<QWidget*> m_optional;
     QPushButton *m_okButton;
 };
 

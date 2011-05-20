@@ -31,11 +31,11 @@ namespace Ui {
 }
 
 class Database;
-class PreferencesDialog;
 class QAbstractItemView;
 class QSqlRelationalTableModel;
 class QSortFilterProxyModel;
 class TableToTreeProxyModel;
+class HideColumnsProxyModel;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -75,6 +75,7 @@ public slots:
     void editTreeItem(const QModelIndex &index);
     QModelIndex rootModelIndex(const QModelIndex &index);
     QAbstractItemModel* rootModel(QAbstractItemModel *model);
+    void openPreferences();
 
 protected:
     void changeEvent(QEvent *event);
@@ -83,12 +84,12 @@ protected:
 private:
     Ui::MainWindow *ui;
     Database *database;
-    PreferencesDialog *preferences;
 
     QSettings settings;
     QDesktopServices desktopServices;
     QSortFilterProxyModel *eventsFilterModel;
     TableToTreeProxyModel *conversationsTreeModel;
+    HideColumnsProxyModel *hideEventsTableColumnsModel;
 };
 
 #endif // MAINWINDOW_H

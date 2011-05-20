@@ -199,11 +199,7 @@ bool Database::create()
         }
     }
 
-#ifdef QT_DEBUG
-    return insertTestData();
-#else
-    return true;
-#endif
+    return insertData();
 }
 
 bool Database::insertTableRow(Table table, const QStringList& values)
@@ -225,37 +221,32 @@ bool Database::insertTableRow(Table table, const QStringList& values)
     return inserted;
 }
 
-bool Database::insertTestData()
+bool Database::insertData()
 {
-    QMap<Table, QStringList> testData;
+    QMap<Table, QStringList> data;
     Table table;
     QStringList tableValues;
 
+#ifdef QT_DEBUG
     table = Character;
     tableValues.append("1, Mike");
     tableValues.append("2, Bob");
     tableValues.append("3, James");
     tableValues.append("4, David");
     tableValues.append("5, Terence");
-    testData.insert(table, tableValues);
+    data.insert(table, tableValues);
     tableValues.clear();
-
+#endif
     table = Writer;
     tableValues.append("1, Jonas");
     tableValues.append("2, Gelo");
-    testData.insert(table, tableValues);
+    data.insert(table, tableValues);
     tableValues.clear();
-
+#ifdef QT_DEBUG
     table = Conversation;
     tableValues.append("1, 1, 1, First Meeting");
     tableValues.append("2, 2, 2, Drunken Reunion");
-    testData.insert(table, tableValues);
-    tableValues.clear();
-
-    table = ConversationEvent;
-    tableValues.append("1, 1, 1, 1");
-    tableValues.append("2, 2, 2, 2");
-    testData.insert(table, tableValues);
+    data.insert(table, tableValues);
     tableValues.clear();
 
     table = Event;
@@ -264,26 +255,27 @@ bool Database::insertTestData()
     tableValues.append("3, 1, 3, 1, 3.wav, Is your face always that colour?");
     tableValues.append("4, 1, 4, 2, 4.mp3, Why would you say that?");
     tableValues.append("5, 1, 5, 1, 5.mp3, I slap your face!");
-    testData.insert(table, tableValues);
+    data.insert(table, tableValues);
     tableValues.clear();
+#endif
 
     table = ConversationType;
     tableValues.append("1, Interactive");
     tableValues.append("2, Overhead");
     tableValues.append("3, Subsequent");
     tableValues.append("4, AI Bark");
-    testData.insert(table, tableValues);
+    data.insert(table, tableValues);
     tableValues.clear();
 
     table = EventType;
     tableValues.append("1, Speech");
     tableValues.append("2, Logic");
     tableValues.append("3, Comment");
-    testData.insert(table, tableValues);
+    data.insert(table, tableValues);
     tableValues.clear();
 
-    foreach(Table table, testData.keys())
-        foreach(const QString &value, testData.value(table))
+    foreach(Table table, data.keys())
+        foreach(const QString &value, data.value(table))
             if (!insertTableRow(table, value.split(", ")))
                 return false;
 
@@ -308,11 +300,6 @@ QMap<int, QSqlRelation> Database::tableRelations(Table table)
         conversationsRelations.insert(1, QSqlRelation(tableName(ConversationType), "ID", "Name"));
         conversationsRelations.insert(2, QSqlRelation(tableName(Writer), "ID", "Name"));
         relations.insert(Conversation, conversationsRelations);
-
-        QMap<int, QSqlRelation> conversationsEventsRelations;
-        conversationsEventsRelations.insert(1, QSqlRelation(tableName(Conversation), "ID", "Name"));
-        conversationsEventsRelations.insert(2, QSqlRelation(tableName(Event), "ID", "Text"));
-        relations.insert(ConversationEvent, conversationsEventsRelations);
 
         QMap<int, QSqlRelation> eventsRelations;
         eventsRelations.insert(1, QSqlRelation(tableName(EventType), "ID", "Name"));

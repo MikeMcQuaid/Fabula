@@ -34,16 +34,27 @@
 #include <QSortFilterProxyModel>
 #include <QMessageBox>
 #include <QKeyEvent>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     database(0),
-    preferences(new PreferencesDialog()),
-    eventsFilterModel(0),
-    conversationsTreeModel(0)
+    eventsFilterModel(new QSortFilterProxyModel(this)),
+    conversationsTreeModel(new TableToTreeProxyModel(this)),
+    hideEventsTableColumnsModel(new HideColumnsProxyModel(this))
 {
     ui->setupUi(this);
+
+    eventsFilterModel->setObjectName("eventsFilterModel");
+
+    hideEventsTableColumnsModel->setObjectName("hideEventsTableColumnsModel");
+    QList<int> hideColumns;
+    hideColumns << 0 << 1 << 4 << 5;
+    hideEventsTableColumnsModel->setHideColumns(hideColumns);
+
+    conversationsTreeModel = new TableToTreeProxyModel(this);
+    conversationsTreeModel->setObjectName("conversationsTreeModel");
 
     QString fileName = settings.value("database").toString();
 
@@ -65,6 +76,7 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->splitter->setSizes(splitterSizes);
     }
 
+    // TODO: Disable actions that need new e.g. characters until ready
     connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(newFile()));
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
     connect(ui->actionAdd_Event, SIGNAL(triggered()), this, SLOT(addEvent()));
@@ -73,17 +85,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDelete_Conversation, SIGNAL(triggered()), this, SLOT(deleteConversation()));
     connect(ui->actionAdd_Character, SIGNAL(triggered()), this, SLOT(addCharacter()));
     connect(ui->actionDelete_Character, SIGNAL(triggered()), this, SLOT(deleteCharacter()));
-    connect(ui->actionPreferences, SIGNAL(triggered()), preferences, SLOT(open()));
+    connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(openPreferences()));
 
     ui->conversationsView->installEventFilter(this);
     ui->eventsView->installEventFilter(this);
 
     connect(ui->conversationsView, SIGNAL(clicked(QModelIndex)),
             this, SLOT(filterOnConversation(QModelIndex)));
-
-    eventsFilterModel = new QSortFilterProxyModel(this);
-    eventsFilterModel->setObjectName("eventsFilterModel");
-    eventsFilterModel->setSourceModel(database->events());
 
     ui->eventsView->setModel(eventsFilterModel);
     ui->eventsView->hideColumn(0);
@@ -92,16 +100,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->eventsView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     connect(ui->eventsView, SIGNAL(activated(QModelIndex)), this, SLOT(editEvent(QModelIndex)));
 
-    HideColumnsProxyModel *hideEventsTableColumnsModel = new HideColumnsProxyModel(this);
-    hideEventsTableColumnsModel->setObjectName("hideEventsTableColumnsModel");
-    QList<int> hideColumns;
-    hideColumns << 0 << 1;
-    hideEventsTableColumnsModel->setHideColumns(hideColumns);
-    hideEventsTableColumnsModel->setSourceModel(database->events());
-
-    conversationsTreeModel = new TableToTreeProxyModel(this);
-    conversationsTreeModel->setObjectName("conversationsTreeModel");
-    conversationsTreeModel->setSourceModel(hideEventsTableColumnsModel);
+    conversationsTreeModel->index(0,0).parent().isValid();
     ui->conversationsView->setModel(conversationsTreeModel);
     ui->conversationsView->sortByColumn(0, Qt::AscendingOrder);
 
@@ -135,12 +134,14 @@ void MainWindow::openFile(QString fileName)
         }
         database = new Database(fileName);
         settings.setValue("database", fileName);
-        reloadTree();
-        reloadEvents();
+        eventsFilterModel->setSourceModel(database->events());
+        hideEventsTableColumnsModel->setSourceModel(database->events());
+        conversationsTreeModel->setSourceModel(hideEventsTableColumnsModel);
         setWindowTitle(QString("%1 - Fabula").arg(fileName));
         ui->centralWidget->setEnabled(true);
-        if (!preferences->haveWriter())
-            preferences->open();
+        if (!PreferencesDialog::haveWriter())
+            // Post an event so it's done after object construction
+            QTimer::singleShot(0, this, SLOT(openPreferences()));
     }
     else {
         if (!database) {
@@ -319,7 +320,7 @@ void MainWindow::editViewItem(const QModelIndex &index, SqlRelationalTableDialog
     }
     delete dialog;
 
-    reloadEvents();
+    //reloadEvents();
 }
 
 void MainWindow::deleteViewItem(const QModelIndex &index, QSqlRelationalTableModel *model)
@@ -376,7 +377,6 @@ MainWindow::~MainWindow()
 {
     settings.setValue("treeSize", ui->splitter->sizes().first());
     settings.setValue("tableSize", ui->splitter->sizes().last());
-    delete preferences;
     delete ui;
     delete database;
 }
@@ -392,6 +392,7 @@ void MainWindow::changeEvent(QEvent *event)
         break;
     }
 }
+
 bool MainWindow::eventFilter(QObject *object, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress) {
@@ -409,4 +410,11 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event)
         }
     }
     return QMainWindow::eventFilter(object, event);
+}
+
+void MainWindow::openPreferences()
+{
+    PreferencesDialog *preferences = new PreferencesDialog(this);
+    preferences->exec();
+    delete preferences;
 }

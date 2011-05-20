@@ -49,7 +49,7 @@ public:
 
 private:
     bool create();
-    bool insertTestData();
+    bool insertData();
     bool insertTableRow(Table table, const QStringList& values);
     QSqlField createField(QString name, QVariant::Type type,
                           bool required = true, bool autoValue = false,

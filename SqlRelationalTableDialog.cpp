@@ -92,21 +92,24 @@ void SqlRelationalTableDialog::checkWriteReady() {
         return;
 
     foreach(QComboBox *comboBox, m_columnComboBox) {
-        if (comboBox->currentIndex() == -1 || comboBox->currentText().isEmpty()) {
+        if ((comboBox->currentIndex() == -1
+                || comboBox->currentText().isEmpty())
+                && !m_optional.contains(comboBox)) {
             m_okButton->setEnabled(false);
             return;
         }
     }
 
     foreach(QLineEdit *lineEdit, m_columnLineEdit) {
-        if (lineEdit->text().isEmpty()) {
+        if (lineEdit->text().isEmpty() && !m_optional.contains(lineEdit)) {
             m_okButton->setEnabled(false);
             return;
         }
     }
 
     foreach(QTextEdit *textEdit, m_columnTextEdit) {
-        if (textEdit->toPlainText().isEmpty()) {
+        if (textEdit->toPlainText().isEmpty()
+                && !m_optional.contains(textEdit)) {
             m_okButton->setEnabled(false);
             return;
         }

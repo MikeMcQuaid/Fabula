@@ -106,6 +106,8 @@ QModelIndex TableToTreeProxyModel::parent(const QModelIndex &child) const
     Q_ASSERT(parentNode);
     if (!parentNode)
         return QModelIndex();
+    if (parentNode == rootNode)
+        return QModelIndex();
 
     return createIndex(parentNode->row, parentNode->column, parentNode);
 }
@@ -135,10 +137,6 @@ bool TableToTreeProxyModel::hasChildren(const QModelIndex &parent) const
 
 void TableToTreeProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
-    // TODO: cleanup on already existing
-    tableNodes.clear();
-    delete rootNode;
-
     if (this->sourceModel()) {
         disconnect(this->sourceModel(), SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                    this, SLOT(reset()));

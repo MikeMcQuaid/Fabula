@@ -29,6 +29,7 @@ EventDialog::EventDialog(QSqlRelationalTableModel *model, QWidget *parent) :
     m_columnComboBox.insert(CharacterColumn, ui->characterComboBox);
     m_columnComboBox.insert(ConversationColumn, ui->conversationComboBox);
     m_columnLineEdit.insert(AudioFileColumn, ui->audioFileLineEdit);
+    m_optional.insert(ui->audioFileLineEdit);
     m_columnTextEdit.insert(TextColumn, ui->textEdit);
 
     connect(ui->typeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(changedEventType(QString)));

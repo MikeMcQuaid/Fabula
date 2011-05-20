@@ -6,73 +6,58 @@
 #include <QDebug>
 #include <QSqlTableModel>
 #include <QSettings>
+#include <QSqlError>
+#include <QLineEdit>
 
 PreferencesDialog::PreferencesDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::PreferencesDialog)
 {
     ui->setupUi(this);
-    QSqlTableModel *writersModel = new QSqlTableModel(this);
+
+    setWindowModality(Qt::WindowModal);
+
+    writersModel = new QSqlTableModel(this);
     writersModel->setTable(Database::tableName(Database::Writer));
-    //writersModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    writersModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
     writersModel->select();
     ui->writerComboBox->setModel(writersModel);
     ui->writerComboBox->setModelColumn(1);
 
-    setWindowModality(Qt::WindowModal);
-
-    load();
-
-    connect(this, SIGNAL(accepted()), this, SLOT(save()));
+    const QVariant writerVariant = QSettings().value("writer");
+    ui->writerNameLabel->setVisible(!writerVariant.isValid());
+    if (writerVariant.isValid()) {
+        const QString& writer = writerVariant.toString();
+        int writerIndex = ui->writerComboBox->findText(writer);
+        ui->writerComboBox->setCurrentIndex(writerIndex);
+    }
+    else
+        ui->writerComboBox->lineEdit()->setText(qgetenv("USER"));
 }
 
 PreferencesDialog::~PreferencesDialog()
 {
-    save();
+    delete writersModel;
     delete ui;
 }
 
-void PreferencesDialog::open()
+void PreferencesDialog::accept()
 {
-    load();
-    QDialog::open();
-}
-
-void PreferencesDialog::close()
-{
-    save();
-    QDialog::close();
-}
-
-void PreferencesDialog::load()
-{
-    const QVariant writerVariant = QSettings().value("writer");
-    ui->writerNameLabel->setVisible(!writerVariant.isValid());
-    if (!writerVariant.isValid())
-        return;
-    const QString& writer = writerVariant.toString();
-    int writerIndex = ui->writerComboBox->findText(writer);
-    ui->writerComboBox->setCurrentIndex(writerIndex);
-}
-
-void PreferencesDialog::save()
-{
-    QAbstractItemModel *abstractWritersModel = ui->writerComboBox->model();
-    QSqlTableModel *writersModel = qobject_cast<QSqlTableModel*>(abstractWritersModel);
-    Q_ASSERT(writersModel);
-    if (!writersModel)
-        return;
-
     const QString &writer = ui->writerComboBox->currentText();
+    Q_ASSERT(!writer.isEmpty());
     if (writer.isEmpty())
         return;
 
-    writersModel->submitAll();
+    bool success = writersModel->submitAll();
+    if (!success)
+        qWarning() << writersModel->lastError().text();
+    Q_ASSERT(success);
     QSettings().setValue("writer", writer);
+
+    QDialog::accept();
 }
 
 bool PreferencesDialog::haveWriter()
 {
-    return true;
-    //return QSettings().value("writer").isValid();
+    return QSettings().value("writer").isValid();
 }
