@@ -50,6 +50,9 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
       <property name="handleWidth">
        <number>1</number>
       </property>
@@ -297,6 +300,9 @@
    </property>
   </action>
   <action name="actionDelete_Event">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="Fabula.qrc">
      <normaloff>:/icons/edit-table-delete-row.png</normaloff>:/icons/edit-table-delete-row.png</iconset>
@@ -322,7 +328,7 @@
   </action>
   <action name="actionDelete_Conversation">
    <property name="enabled">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="icon">
     <iconset resource="Fabula.qrc">
@@ -342,6 +348,9 @@
    </property>
   </action>
   <action name="actionDelete_Character">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="Fabula.qrc">
      <normaloff>:/icons/list-remove-user.png</normaloff>:/icons/list-remove-user.png</iconset>
