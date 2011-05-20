@@ -227,7 +227,7 @@ bool Database::insertData()
     Table table;
     QStringList tableValues;
 
-#ifdef QT_DEBUG
+#ifdef _QT_DEBUG
     table = Character;
     tableValues.append("1, Mike");
     tableValues.append("2, Bob");
@@ -242,7 +242,7 @@ bool Database::insertData()
     tableValues.append("2, Gelo");
     data.insert(table, tableValues);
     tableValues.clear();
-#ifdef QT_DEBUG
+#ifdef _QT_DEBUG
     table = Conversation;
     tableValues.append("1, 1, 1, First Meeting");
     tableValues.append("2, 2, 2, Drunken Reunion");
