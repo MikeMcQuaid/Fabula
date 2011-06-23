@@ -169,21 +169,6 @@ if(NOT "${CMAKE_VERSION}" VERSION_LESS "2.8.4")
 
 	include(CPack)
 
-	set(QT_PLUGINS "")
-	if(QT_QSQLITE_PLUGIN_RELEASE)
-		list(APPEND QT_PLUGINS "${QT_QSQLITE_PLUGIN_RELEASE}")
-	endif()
-	if(NOT CMAKE_BUILD_RELEASE)
-		set(CMAKE_INSTALL_DEBUG_LIBRARIES_ONLY TRUE)
-		if(QT_QSQLITE_PLUGIN_DEBUG)
-			list(APPEND QT_PLUGINS "${QT_QSQLITE_PLUGIN_DEBUG}")
-		endif()
-	endif()
-
-	if(NOT QT_PLUGINS)
-		message(FATAL_ERROR "Cannot find Qt plugins!")
-	endif()
-
 	set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "${BIN_INSTALL_DIR}")
 	include(InstallRequiredSystemLibraries)
 
@@ -197,6 +182,6 @@ if(NOT "${CMAKE_VERSION}" VERSION_LESS "2.8.4")
 
 	if(APPLE OR WIN32)
 		include(DeployQt4)
-		install_qt4_app("${EXECUTABLE}" "${QT_PLUGINS}")
+		install_qt4_app("${EXECUTABLE}" "qsqlite")
 	endif()
 endif()

@@ -67,7 +67,7 @@ function(fixup_qt4_bundle app qtplugins)
     endif()
 
     foreach(plugin ${qtplugins})
-        if(EXISTS ${plugin})
+        if(EXISTS "${plugin}")
             set(plugin_group "")
 
             get_filename_component(plugin_path "${plugin}" PATH)
@@ -110,9 +110,30 @@ function(install_qt4_app executable qtplugins)
         list(APPEND dirs "${QT_LIBRARY_DIR}")
     endif()
 
+    get_filename_component(executable_absolute "${executable}" ABSOLUTE)
+    gp_file_type("${executable_absolute}" "${QT_QTCORE_LIBRARY}" qtcore_type)
+    if(qtcore_type STREQUAL "system")
+        set(qt_plugins_dir "")
+    endif()
+
+    foreach(plugin ${qtplugins})
+        string(TOUPPER "QT_${plugin}_PLUGIN" plugin_var)
+        if(NOT "${plugin}" AND EXISTS "${${plugin_var}_RELEASE}")
+            set(plugin "${${plugin_var}_RELEASE}")
+        elseif(NOT "${plugin}" AND EXISTS "${plugin_var}_DEBUG")
+            set(plugin "${${plugin_var}_DEBUG}")
+        endif()
+
+        if(NOT EXISTS "${plugin}")
+            message(FATAL_ERROR "Plugin ${plugin} not found")
+        endif()
+
+        list(APPEND "${plugin}" qtplugins_paths)
+    endforeach()
+
     install(CODE
 " INCLUDE( \"${CMAKE_MODULE_PATH}/DeployQt4.cmake\" )
   SET( BU_CHMOD_BUNDLE_ITEMS TRUE )
-  FIXUP_QT4_BUNDLE( \"\${CMAKE_INSTALL_PREFIX}/${executable}\" \"${qtplugins}\" \"${libs}\" \"${dirs}\" \"${plugins_dir}\" ) "
+  FIXUP_QT4_BUNDLE( \"\${CMAKE_INSTALL_PREFIX}/${executable}\" \"${qtplugins_paths}\" \"${libs}\" \"${dirs}\" \"${plugins_dir}\" ) "
     )
 endfunction(install_qt4_app)
