@@ -182,6 +182,6 @@ if(NOT "${CMAKE_VERSION}" VERSION_LESS "2.8.4")
 
 	if(APPLE OR WIN32)
 		include(DeployQt4)
-		install_qt4_app("${EXECUTABLE}" "qsqlite")
+		install_qt4_executable("${EXECUTABLE}" "qsqlite")
 	endif()
 endif()
