@@ -1,4 +1,4 @@
-project(Fabula)
+project(Fabula CXX)
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
@@ -43,15 +43,10 @@ else()
 endif()
 set(ICONS_DIR "${${PROJECT_NAME}_SOURCE_DIR}/icons")
 
-if(CMAKE_COMPILER_IS_GNUCXX)
-	add_definitions(-Wall -Wextra -Wold-style-cast -Wformat=2 -Winit-self -Wundef -Wpointer-arith -Wcast-qual
-		-Wunused -Wmissing-format-attribute -Wredundant-decls -Wnon-virtual-dtor -Woverloaded-virtual
-		-Wstrict-null-sentinel -Wno-pmf-conversions -Wctor-dtor-privacy)
+if(CMAKE_COMPILER_IS_GNUCXX OR APPLE)
+	add_definitions(-Wall -Wextra)
 	if(CMAKE_BUILD_RELEASE)
 		add_definitions(-Werror)
-	endif()
-	if(UNIX)
-		add_definitions(-Wconversion)
 	endif()
 endif()
 
