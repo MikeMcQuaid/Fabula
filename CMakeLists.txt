@@ -1,7 +1,7 @@
 project(Fabula CXX)
 
 if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "" FORCE)
 endif()
 
 if(APPLE AND CMAKE_INSTALL_PREFIX MATCHES "/usr/local")
