@@ -25,7 +25,7 @@ extend it beyond that.
 [Mike McQuaid](mailto:mike@mikemcquaid.com)
 
 ## License
-Fabula is licensed under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+Fabula is licensed under the [GPLv3 License](https://en.wikipedia.org/wiki/GNU_General_Public_License).
 The full license text is available in [LICENSE.txt](https://github.com/mikemcquaid/Fabula/blob/master/LICENSE.txt).
 
 The icons are taken from the [Oxygen Project](http://www.oxygen-icons.org/) and are licensed under the [Creative Commons Attribution-ShareAlike 3.0 License](http://creativecommons.org/licenses/by-sa/3.0/).
